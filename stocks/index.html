@@ -111,8 +111,10 @@
     }
 
     async function initWalleStockDevTool() {      
-      // 1 min 
-      var interval = window.__Walle_Stock_Interval_Capture_Start(60*1000)
+      // 1 min , default 5 min
+      // var interval = window.__Walle_Stock_Interval_Capture_Start(60*1000)
+
+      var interval = window.__Walle_Stock_Interval_Capture_Start()
     }
 
     async function initWalleStockData() {
