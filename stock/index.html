@@ -10,6 +10,9 @@
   <title>::: Walle Stocks Center :::</title>
   <script src="./lib/url.js"></script>
   <script src="./lib/moment.min.js"></script>
+  <script src="./lib/popper.min.js"></script>
+  <script src="./lib/tooltip.min.js"></script>
+  <link rel="stylesheet" href="./lib/popper.css" />
   <style>
     * {
       padding: 0;
@@ -76,6 +79,28 @@
       width: 100%;
       height: 80%;
     }
+
+    .tooltip {
+      background: #FFC107;
+      color: #fff;
+      width: auto;
+      max-width: 70%;
+      box-shadow: none;
+    }
+
+    .tooltip .table {
+      font-size: 12px;
+      margin-top: 10px;
+    }
+
+    .tooltip .table th {
+      min-width: 100px;
+    }    
+
+    .tooltip .table .tbody {
+      font-weight: 300;
+    }
+
   </style>
 </head>
 <body>
@@ -97,11 +122,21 @@
       'history-trace': './collections/history-trace/',
       'daily-trace': './collections/daily-trace/',
     }
-    var dailyListsChange = {}
+    var dailyListsChange = {
+      changes: {
+        // 'xxx': {
+        //   time: [],
+        //   data: [],
+        // }
+      },
+      newlists: '',
+      oldlists: '',
+    };
     var dailyNavSelected = ''
     var mask = document.getElementById('mask')
     var iframe = document.getElementById('charts')
     var interval = 0
+    var toolTip = null
 
     function showMask(msg) {
       mask.style.display = 'flex'
@@ -130,7 +165,7 @@
       if (sdailyListsChange) {
         dailyListsChange = JSON.parse(sdailyListsChange)
         console.log('@initWalleStockDevTool@ recover ', dailyListsChange)
-        buildTodayNav(dailyListsChange, true)
+        buildTodayNav()
         hideMask()
       }
     }
@@ -142,7 +177,8 @@
 
       if (location.protocol === 'file:') {
         // file:// use 
-        // injectScript('../../dist/walle-stock.min.js',initWalleStockDevTool)
+        injectScript('../../dist/walle-stock.min.js',initWalleStockDevTool)
+      } else if ( location.host.includes('localhost') ) {
         // debug use 
         injectScript('http://localhost:8080/walle-stock.min.js',initWalleStockDevTool)
       } else {
@@ -153,28 +189,29 @@
       window.addEventListener('__Walle_Stock_Daily_Trace_Event', async function ({ detail }) {
         var time = moment().format('HH:mm:ss')
         var date = moment().format('YYYYMMDD')
-        var { changes: data , newlists, oldlists } = detail
-        console.log('#__Walle_Stock_Daily_Trace_Event# ', time, data)
+        console.log('#__Walle_Stock_Daily_Trace_Event# ', time, detail)
 
+        var data = detail.changes
         var keys = Object.keys(data)
         for (var list_name of keys) {
           var value = data[list_name]
 
-          if (!dailyListsChange[list_name]) { 
-            dailyListsChange[list_name] = {
+          if (!dailyListsChange.changes[list_name]) { 
+            dailyListsChange.changes[list_name] = {
               time: [time],
               data: [value]
             }
           } else {
-
-            dailyListsChange[list_name].time.push(time)
-            dailyListsChange[list_name].data.push(value)
+            dailyListsChange.changes[list_name].time.push(time)
+            dailyListsChange.changes[list_name].data.push(value)
           }
         }
 
+        dailyListsChange.newlists = detail.newlists
+        dailyListsChange.oldlists = detail.oldlists
         await localStorage.setItem(`__Walle_Stock_Daily_Trace_${date}`, JSON.stringify(dailyListsChange))
 
-        buildTodayNav(data)
+        buildTodayNav()
         hideMask()
       }) 
     }
@@ -185,23 +222,78 @@
       
       var liSelected = document.querySelector('#nav li.selected')
       if (liSelected) { liSelected.removeAttribute('class') }
-      document.querySelector(`#nav li[name="${name}"]`).setAttribute('class', 'selected')
+      var el = document.querySelector(`#nav li[name="${name}"]`)
+      el && el.setAttribute('class', 'selected')
 
-      console.log('#onChangeTodayCharts call __Walle_Charts_Callback# ', dailyNavSelected, dailyListsChange[dailyNavSelected])
-      iframe.contentWindow.window.__Walle_Charts_Callback(dailyListsChange[dailyNavSelected])
+      console.log('#call __Walle_Charts_Callback# ', dailyNavSelected, dailyListsChange.changes[dailyNavSelected])
+      iframe.contentWindow.window.__Walle_Charts_Callback(dailyListsChange.changes[dailyNavSelected])
+    }
+
+    function createStocksTable(list, name) {
+      var translator = {
+        code: '股票代码',
+        name: '股票简称',
+        price: '股价',
+        zdf: '涨跌幅',
+        hsl: '换手率',
+        ddlr: '大单流入',
+        lrzj: '流入资金',
+        lczj: '流出资金',
+        je: '资金净额',
+        cjl: '成交额',
+      }
+
+      var table = '<table class="table">'
+
+      var stockCodes = Object.keys(list[name])
+
+      var thead = `<thead><tr>`
+      var fieldKeys = list[name][stockCodes[0]]
+      for (var key in fieldKeys) {
+        thead += `<th scope="col">${translator[key]}</th>`
+      }
+      thead += '</tr></thead>'
+
+      var tbody = `<tbody>`
+      for (var code of stockCodes) {
+        tbody += '<tr>'
+        var stock = list[name][code]
+        for (var field in fieldKeys ) {
+          tbody += `<th scope="row">${stock[field]}</th>`
+        }
+        tbody += '</tr>'
+      }  
+      tbody += `</tbody>`
+
+      table += thead + tbody + '</table>'
+
+      return table
+    }
+
+    function onHoverTodayCharts(el, name) {
+      var newListTable = createStocksTable(dailyListsChange.newlists, name)
+      var oldListTable = createStocksTable(dailyListsChange.oldlists, name)
+
+      toolTip && toolTip.hide()
+      toolTip = new Tooltip(el, {
+        title: `今日${newListTable}<br/>昨日${oldListTable}`,
+        html: true,
+      });
+      toolTip.show();
     }
  
-    function buildTodayNav(data, isRecover) {
+    function buildTodayNav() {
       var nav = document.getElementById('nav')
+      var data = dailyListsChange.changes
       var names = Object.keys(data)
       var shtml = ''
 
       for (var name of names) {
         if (name === '跌幅榜') { continue }
-
-        var ptcchange = isRecover ? data[name].data[data[name].data.length - 1] : data[name]
+        
+        var ptcchange = data[name].data[data[name].data.length - 1]
         var text = (name.slice(-1) === '榜') ? name.slice(0, -1): name
-        shtml += `<li onclick="onChangeTodayCharts('${name}')" name="${name}" >${text.toUpperCase()}(%${ptcchange})</li>`
+        shtml += `<li onmouseover="onHoverTodayCharts(this, '${name}')" onclick="onChangeTodayCharts('${name}')" name="${name}" >${text.toUpperCase()}(%${ptcchange})</li>`
       }
       nav.innerHTML = shtml
 
