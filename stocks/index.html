@@ -1,0 +1,260 @@
+
+<!-- [重要] file协议载入 浏览器由于安全限制 会禁止iframe显示 注意关闭浏览器的安全限制 -->
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>::: Walle Stocks Center :::</title>
+  <script src="./lib/url.js"></script>
+  <script src="./lib/moment.min.js"></script>
+  <style>
+    * {
+      padding: 0;
+      margin: 0;
+    }
+
+    html,body {
+      width: 100%;
+      height: 100%;
+
+      color: #1d1f21;
+      font-size: 17px;
+      font-family: "Menlo", "Meslo LG", "Microsoft Yahei", monospace;
+      font-weight: 400;
+    }
+
+    iframe {
+      width: 90%;
+      height: 90%;
+      margin: auto;
+      display: block;
+    }
+
+    ul {
+      list-style: none;
+      text-align: center;
+      padding: 20px;
+      width: 80%;
+      margin: auto;
+    }
+
+    li {
+      text-align: center;
+      display: inline-block;
+      padding: 5px 30px;
+    }
+
+    li.selected {
+      color:rgb(255, 99, 132);
+    }
+
+    li:hover {
+      color:rgb(255, 99, 132);
+      transition: color 0.3s linear, background-color 0.3s linear;
+    }
+
+    a {
+      text-decoration: none;
+      color: inherit;
+    }
+
+    #mask {
+      background: #fff;
+      opacity: 0.5;
+      display: none;
+      align-items:center;
+      justify-content:center;
+      font: 48px;
+      font-weight: bold;
+
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+    }
+  </style>
+</head>
+<body>
+
+  <div id="mask"> Walle Loading ... </div>
+
+  <ul id="switch">
+    <li id="today-trace"  class="selected"><a href="?mode=today-trace">今日跟踪</a></li>
+    <li id="daily-trace"><a href="?mode=daily-trace">近期跟踪</a></li>
+    <li id="history-trace"><a href="?mode=history-trace">历史数据</a></li>
+  </ul>
+  
+  <ul id="nav"></ul>
+  <iframe id="charts" src="" frameborder="0" scrolling="no"></iframe>
+
+  <script>
+    var mode = url('?mode') || 'today-trace'
+    var collections = {
+      'history-trace': './collections/history-trace/',
+      'daily-trace': './collections/daily-trace/',
+    }
+    var dailyListsChange = {}
+    var dailyNavSelected = ''
+    var mask = document.getElementById('mask')
+    var iframe = document.getElementById('charts')
+
+    function showMask() {
+      mask.style.display = 'flex'
+    }
+
+    function hideMask() {
+      mask.style.display = 'none'
+    }
+
+    async function initWalleStockDevTool() {      
+      // 1 min 
+      var interval = window.__Walle_Stock_Interval_Capture_Start(60*1000)
+    }
+
+    async function initWalleStockData() {
+      var date = moment().format('YYYYMMDD')
+      var lastdate = moment().subtract(1, 'day').format('YYYYMMDD')
+      
+      localStorage.removeItem(`__Walle_Stock_Daily_Trace_${lastdate}`)
+      var sdailyListsChange = await localStorage.getItem(`__Walle_Stock_Daily_Trace_${date}`) 
+      if (sdailyListsChange) {
+        dailyListsChange = JSON.parse(sdailyListsChange)
+        console.log('@initWalleStockDevTool@ recover ', dailyListsChange)
+        buildTodayNav(dailyListsChange, true)
+        hideMask()
+      }
+    }
+
+    function onSwitchToday() {
+      showMask()
+      iframe.src=`./charts.html?mode=today-trace`
+      iframe.onload = initWalleStockData
+
+      if (location.protocol === 'file:') {
+        // file:// use 
+        // injectScript('../../dist/walle-stock.min.js',initWalleStockDevTool)
+        // debug use 
+        injectScript('http://localhost:8080/walle-stock.min.js',initWalleStockDevTool)
+      } else {
+        // production use 
+        injectScript('../walle-stock.min.js',initWalleStockDevTool)
+      }
+
+      window.addEventListener('__Walle_Stock_Daily_Trace', async function ({ detail: data }) {
+        var time = moment().format('HH:mm:ss')
+        var date = moment().format('YYYYMMDD')
+        console.log('#__Walle_Stock_Daily_Trace# ', time, data)
+
+        var keys = Object.keys(data)
+        for (var list_name of keys) {
+          var value = data[list_name]
+
+          if (!dailyListsChange[list_name]) { 
+            dailyListsChange[list_name] = {
+              time: [time],
+              data: [value]
+            }
+          } else {
+
+            dailyListsChange[list_name].time.push(time)
+            dailyListsChange[list_name].data.push(value)
+          }
+        }
+
+        await localStorage.setItem(`__Walle_Stock_Daily_Trace_${date}`, JSON.stringify(dailyListsChange))
+
+        buildTodayNav(data)
+        hideMask()
+      }) 
+    }
+
+    function onChangeTodayCharts(name) {
+      dailyNavSelected = name
+      var nav = document.getElementById('nav')
+      
+      var liSelected = document.querySelector('#nav li.selected')
+      if (liSelected) { liSelected.removeAttribute('class') }
+      document.querySelector(`#nav li[name="${name}"]`).setAttribute('class', 'selected')
+
+      console.log('#onChangeTodayCharts call __Walle_Charts_Callback# ', dailyNavSelected, dailyListsChange[dailyNavSelected])
+      iframe.contentWindow.window.__Walle_Charts_Callback(dailyListsChange[dailyNavSelected])
+    }
+ 
+    function buildTodayNav(data, isRecover) {
+      var nav = document.getElementById('nav')
+      var names = Object.keys(data)
+      var shtml = ''
+
+      for (var name of names) {
+        if (name === '跌幅榜') { continue }
+
+        var ptcchange = isRecover ? data[name].data[data[name].data.length - 1] : data[name]
+        var text = (name.slice(-1) === '榜') ? name.slice(0, -1): name
+        shtml += `<li onclick="onChangeTodayCharts('${name}')" name="${name}" >${text.toUpperCase()}(%${ptcchange})</li>`
+      }
+      nav.innerHTML = shtml
+
+      onChangeTodayCharts(dailyNavSelected || names[0])
+    }
+
+    function onSwitch() {
+      var liSelected = document.querySelector('#switch li.selected')
+      if (liSelected) { liSelected.removeAttribute('class') }
+      var el = document.querySelector(`#switch #${mode}`)
+      if(el ) { el.setAttribute('class', 'selected') }
+
+      (mode === 'today-trace') ? onSwitchToday() : onSwitchDailyOrHistory()
+    }
+
+    function onSwitchDailyOrHistory() {
+      var collectionJs = `${collections[mode]}/collection.js`
+      injectScript(collectionJs)
+    }
+
+    function onChangeDailyOrHistoryCharts(list_name) {
+      iframe.src=`./charts.html?name=${list_name}&collection=${collections[mode]}`
+      // iframe.contentWindow.location.reload(true)
+
+      var nav = document.getElementById('nav')
+      
+      var liSelected = document.querySelector('#nav li.selected')
+      if (liSelected) { liSelected.removeAttribute('class') }
+      document.querySelector(`#nav li[name="${list_name}"]`).setAttribute('class', 'selected')
+    }
+    
+    window.__Walle_Stocks_Callback = function (data) {
+      var nav = document.getElementById('nav')
+      var names = data.names.split(',')
+
+      // 上证指数在第一位
+      var shtml = `<li onclick="onChangeDailyOrHistoryCharts('上证指数')" name="上证指数" >上证指数</li>`
+      for (var name of names) {
+        if (name === '跌幅榜' || name === '上证指数') { continue }
+
+        var text = (name.slice(-1) === '榜') ? name.slice(0, -1): name
+        shtml += `<li onclick="onChangeDailyOrHistoryCharts('${name}')" name="${name}" >${text.toUpperCase()}</li>`
+      }
+      nav.innerHTML = shtml
+
+      onChangeDailyOrHistoryCharts('上证指数')
+    }
+
+
+    function injectScript(src, cb) { 
+			var e = document.createElement('script'); 
+			e.type = 'text/javascript'; 
+      e.src = src; 
+      e.onload = cb
+			document.body.appendChild(e) 
+		}
+
+    window.onload = function() {
+      onSwitch()
+    }
+  </script>
+</body>
+</html>
