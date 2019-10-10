@@ -175,10 +175,7 @@
       iframe.src=`./charts.html?mode=today-trace`
       iframe.onload = initWalleStockData
 
-      if (location.protocol === 'file:') {
-        // file:// use 
-        injectScript('../../dist/walle-stock.min.js',initWalleStockDevTool)
-      } else if ( location.host.includes('localhost') ) {
+      if ( location.host.includes('localhost') ) {
         // debug use 
         injectScript('http://localhost:8080/walle-stock.min.js',initWalleStockDevTool)
       } else {
