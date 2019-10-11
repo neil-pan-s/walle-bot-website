@@ -53,7 +53,7 @@
     li.selected {
       color:rgb(255, 99, 132);
     }
-
+ 
     li:hover {
       color:rgb(255, 99, 132);
       transition: color 0.3s linear, background-color 0.3s linear;
@@ -298,8 +298,11 @@
         popperOptions: {
           placement: 'bottom',
           modifiers: {
+            flip: {
+              behavior: ['left', 'bottom', 'top']
+            },
             preventOverflow: {
-              boundariesElement: document.querySelector('body'),
+              boundariesElement: el.parentNode,
             },
           },
         },
