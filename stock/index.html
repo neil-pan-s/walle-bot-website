@@ -214,6 +214,8 @@
 
         dailyListsChange.newlists = detail.newlists
         dailyListsChange.oldlists = detail.oldlists
+
+        console.log(`#__Walle_Stock_Daily_Trace_${date}# `, dailyListsChange)
         await localStorage.setItem(`__Walle_Stock_Daily_Trace_${date}`, JSON.stringify(dailyListsChange))
 
         buildTodayNav()
