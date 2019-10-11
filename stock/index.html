@@ -291,18 +291,19 @@
       var nav = document.getElementById('nav')
       var data = dailyListsChange.changes
       var names = Object.keys(data)
-      var shtml = ''
 
+      var index_ptcchange = data['上证指数'].data[data['上证指数'].data.length - 1]
+      var shtml = `<li onmouseover="onHoverTodayCharts(this, '上证指数')" onclick="onChangeTodayCharts('上证指数')" name="上证指数" >上证指数(%${index_ptcchange})</li>`
       for (var name of names) {
-        if (name === '跌幅榜') { continue }
-        
+        if (name === '跌幅榜' || name === '上证指数') { continue }
+  
         var ptcchange = data[name].data[data[name].data.length - 1]
         var text = (name.slice(-1) === '榜') ? name.slice(0, -1): name
         shtml += `<li onmouseover="onHoverTodayCharts(this, '${name}')" onclick="onChangeTodayCharts('${name}')" name="${name}" >${text.toUpperCase()}(%${ptcchange})</li>`
       }
       nav.innerHTML = shtml
 
-      onChangeTodayCharts(dailyNavSelected || names[0])
+      onChangeTodayCharts(dailyNavSelected || '上证指数')
     }
 
     function onSwitch() {
