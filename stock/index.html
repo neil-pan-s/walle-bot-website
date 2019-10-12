@@ -258,9 +258,11 @@
         cjl: '成交额',
       }
 
-      var table = '<table class="table">'
+      if (!list[name]) { return }
 
       var stockCodes = Object.keys(list[name])
+
+      var table = '<table class="table">'
 
       var thead = `<thead><tr>`
       var fieldKeys = list[name][stockCodes[0]]
