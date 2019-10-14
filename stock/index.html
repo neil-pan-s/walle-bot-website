@@ -133,10 +133,10 @@
     var collections = {
       // 访问地址 ?mode=history-trace-with-limit-up-sotcks
       // 捕获榜单包含涨停股 但无法买入操作 追踪数据计算收益有偏差(偏大很多)
-      'history-trace-with-limit-up-sotcks': './collections/history-trace-with-limit-up-sotcks/',
+      'history-trace-with-limit-up-sotcks': './collections/history-trace-with-limit-up-stocks/',
       // 访问地址 ?mode=history-trace-without-limit-up-sotcks
       // 捕获榜单不包含涨停股 接近实际买入操作
-      'history-trace-without-limit-up-sotcks': './collections/history-trace-without-limit-up-sotcks/',
+      'history-trace-without-limit-up-sotcks': './collections/history-trace-without-limit-up-stocks/',
 
       'history-trace': './collections/history-trace/',
       'daily-trace': './collections/daily-trace/',
@@ -357,7 +357,7 @@
     }
 
     function onSwitchDailyOrHistory() {
-      var collectionJs = `${collections[mode]}/collection.js`
+      var collectionJs = `${collections[mode]}/index.js`
       injectScript(collectionJs)
     }
 

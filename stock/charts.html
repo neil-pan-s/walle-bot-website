@@ -40,37 +40,85 @@
 		function handleDailyOrHistotyChartsData(datas) {
 			let labels = []
 			let data = {
-				'ptcchange': [],
-				'profit': [],
+				'daily-close-ptcchange': [],
+				'daily-close-profit': [],
+				'daily-open-ptcchange': [],
+				'daily-open-profit': [],				
 			}
-			let profit = 0
 
-			let length = datas['daily-ptcchange'].length
+			let length = datas['daily-close-ptcchange'].length
 
 			for (let index = length - 1; index >= 0; index--) {
-				let item = datas['daily-ptcchange'][index]
-
 				if (index%2 == 0) {
-					labels.push(item)
+					let date = datas['daily-close-ptcchange'][index]
+					labels.push(date)
 				} else {
-					profit += datas['daily-ptcchange'][index]
-					data['ptcchange'].push(datas['daily-ptcchange'][index])
-					data['profit'].push(datas['daily-profit'][index])
+					data['daily-close-ptcchange'].push(datas['daily-close-ptcchange'][index])
+					data['daily-close-profit'].push(datas['daily-close-profit'][index])
+					
+					if(datas['daily-open-ptcchange']) {
+						data['daily-open-ptcchange'].push(datas['daily-open-ptcchange'][index])
+					}
+					if(datas['daily-open-profit']) {
+						data['daily-open-profit'].push(datas['daily-open-profit'][index])
+					}
 				}
 			}
 
 			return {
 				labels,
-				datas: data,
-				profit,
+				datasets: [
+					{
+						label: `Stocks PTCChange-Close`,
+						backgroundColor: window.chartColors.blue,
+						borderColor: window.chartColors.blue,
+						data: data['daily-close-ptcchange'],
+						fill: false,
+					}, 
+					{
+						label: 'Stocks Total Profit-Close',
+						fill: false,
+						backgroundColor: window.chartColors.red,
+						borderColor: window.chartColors.red,
+						data: data['daily-close-profit'],
+					},
+					{
+						label: `Stocks PTCChange-Open`,
+						backgroundColor: window.chartColors.yellow,
+						borderColor: window.chartColors.yellow,
+						data: data['daily-open-ptcchange'],
+						fill: false,
+					}, 
+					{
+						label: 'Stocks Total Profit-Open',
+						fill: false,
+						backgroundColor: window.chartColors.orange,
+						borderColor: window.chartColors.orange,
+						data: data['daily-open-profit'],
+					}					
+				]
 			}
 		}
 
 		function handleTodayChartsData(datas) {
 			return {
 				labels: datas.time,
-				datas: { ptcchange: datas.data },
-				profit: datas.data[datas.data.length-1],
+				datasets: [
+					{
+						label: `Stocks PTC-Change`,
+						backgroundColor: window.chartColors.blue,
+						borderColor: window.chartColors.blue,
+						data: datas.data.ptcchange,
+						fill: false,
+					}, 
+					{
+						label: 'Stocks Total Profit',
+						fill: false,
+						backgroundColor: window.chartColors.red,
+						borderColor: window.chartColors.red,
+						data: datas.data.profit,
+					}
+				]
 			}
 		}
 
@@ -81,28 +129,13 @@
 				type: 'line',
 				data: {
 					labels: chartsData.labels,
-					datasets: [
-						{
-							label: `Stocks PTC-Change`,
-							backgroundColor: window.chartColors.red,
-							borderColor: window.chartColors.red,
-							data: chartsData.datas.ptcchange,
-							fill: false,
-						}, 
-						{
-							label: 'Stocks Total Profit',
-							fill: false,
-							backgroundColor: window.chartColors.blue,
-							borderColor: window.chartColors.blue,
-							data: chartsData.datas.profit,
-						}
-					]
+					datasets: chartsData.datasets,
 				},
 				options: {
 					responsive: true,
 					title: {
 						display: true,
-						text: `Walle Trace Chart (%${(+chartsData.profit).toFixed(2)})`
+						text: `Walle Trace Chart`
 					},
 					tooltips: {
 						mode: 'index',
