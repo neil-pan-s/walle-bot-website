@@ -7,6 +7,11 @@
 <head>
 	<title>Walle Trace Chart</title>
 	<script src="./lib/Chart.min.js"></script>
+
+	<!-- chratjs zoom 插件 [deprecated] 使用体验不佳 -->
+	<!-- <script src="https://cdn.jsdelivr.net/npm/hammerjs@2.0.8"></script>
+	<script src="https://npmcdn.com/Chart.Zoom.js@latest/Chart.Zoom.min.js"></script> -->
+
 	<script src="./lib/url.js"></script>
 	<style>
 	canvas{
@@ -153,8 +158,28 @@
 								labelString: 'PTC Change'
 							}
 						}]
-					}
-				}
+					},	
+					// Container for pan options
+					pan: {
+						// Boolean to enable panning
+						enabled: true,
+
+						// Panning directions. Remove the appropriate direction to disable 
+						// Eg. 'y' would only allow panning in the y direction
+						mode: 'xy'
+					},
+
+
+					// Container for zoom options
+					zoom: {
+						// Boolean to enable zooming
+						enabled: true,
+
+						// Zooming directions. Remove the appropriate direction to disable 
+						// Eg. 'y' would only allow zooming in the y direction
+						mode: 'xy'
+					}		
+				},
 			};
 
 			var ctx = document.getElementById('canvas').getContext('2d');
