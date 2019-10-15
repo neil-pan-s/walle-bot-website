@@ -141,16 +141,7 @@
       'history-trace': './collections/history-trace/',
       'daily-trace': './collections/daily-trace/',
     }
-    var dailyListsChange = {
-      changes: {
-        // 'xxx': {
-        //   time: [],
-        //   data: [],
-        // }
-      },
-      newlists: '',
-      oldlists: '',
-    };
+    var defaultDailyListsChange = {}
     var dailyNavSelected = ''
     var mask = document.getElementById('mask')
     var iframe = document.getElementById('charts')
@@ -215,6 +206,16 @@
         var time = moment().format('HH:mm:ss')
         var date = moment().format('YYYYMMDD')
         console.log('#__Walle_Stock_Daily_Trace_Event# ', time, detail)
+
+        // every day reset dailyListsChange
+        if (dailyListsChange.date !== date) {
+          dailyListsChange = {
+            date,
+            changes: {},
+            newlists: {},
+            oldlists: {},
+          }
+        }
 
         var data = detail.changes
         var keys = Object.keys(data)
