@@ -47,7 +47,7 @@
     li {
       text-align: center;
       display: inline-block;
-      padding: 5px 30px;
+      padding: 5px 15px;
     }
 
     li.selected {
@@ -120,7 +120,7 @@
   <div id="mask"> Walle Stock Market </div>
 
   <ul id="switch">
-    <li id="today-trace"  class="selected"><a href="?mode=today-trace">今日跟踪</a></li>
+    <li id="today-trace"  class="selected"><a href="?mode=today-trace">今日数据</a></li>
     <li id="daily-trace"><a href="?mode=daily-trace">近期跟踪</a></li>
     <li id="history-trace"><a href="?mode=history-trace">历史数据</a>(<a id="limit-up-switch" class="without" href="#" onclick="onLimitUpSwitch(this)">10%</a>)</li>
   </ul>
@@ -142,6 +142,7 @@
       'daily-trace': './collections/daily-trace/',
     }
     var dailyListsChange = {}
+    var dailyListsCapture = {}
     var dailyNavSelected = ''
     var mask = document.getElementById('mask')
     var iframe = document.getElementById('charts')
@@ -180,12 +181,20 @@
       var lastdate = moment().subtract(1, 'day').format('YYYYMMDD')
       
       localStorage.removeItem(`__Walle_Stock_Daily_Trace_${lastdate}`)
+      localStorage.removeItem(`__Walle_Stock_Daily_Capture_${lastdate}`)
+
       var sdailyListsChange = await localStorage.getItem(`__Walle_Stock_Daily_Trace_${date}`) 
       if (sdailyListsChange) {
         dailyListsChange = JSON.parse(sdailyListsChange)
-        console.log('@initWalleStockDevTool@ recover ', dailyListsChange)
+        console.log('@initWalleStockDevTool@ Trace ', dailyListsChange)
         buildTodayNav()
         hideMask()
+      }
+
+      var sTodayCaptureLists = await localStorage.getItem(`__Walle_Stock_Daily_Capture_${date}`) 
+      if (sTodayCaptureLists) {
+        dailyListsCapture = JSON.parse(sTodayCaptureLists)
+        console.log('@initWalleStockDevTool@ Capture ', dailyListsCapture)
       }
     }
 
@@ -201,6 +210,14 @@
         // production use 
         injectScript('../walle-stock.min.js',initWalleStockDevTool)
       }
+
+      window.addEventListener('__Walle_Stock_Daily_Capture_Event', async function ({ detail }) {
+        console.log('#__Walle_Stock_Daily_Capture_Event# ', detail)
+        var date = moment().format('YYYYMMDD')
+
+        dailyListsCapture = detail
+        await localStorage.setItem(`__Walle_Stock_Daily_Capture_${date}`, JSON.stringify(dailyListsCapture))
+      })
 
       window.addEventListener('__Walle_Stock_Daily_Trace_Event', async function ({ detail }) {
         var time = moment().format('HH:mm:ss')
@@ -301,10 +318,21 @@
       return table
     }
 
-    function onHoverTodayCharts(el, name) {
-      var newListTable = createStocksTable(dailyListsChange.newlists, name)
-      var oldListTable = createStocksTable(dailyListsChange.oldlists, name)
-      var title = `今日${newListTable}<br/>昨日${oldListTable}`
+    async function onHoverTodayCharts(el, name, isTodayCaptureList = false) {
+      var title = ''
+
+      if (isTodayCaptureList) {
+        if(dailyListsCapture[name]) {
+          // 今日捕获数据
+          var listTable = createStocksTable(dailyListsCapture, name)
+          title = `今日${listTable}<br/>`    
+        }    
+      } else {
+        // 昨日追踪数据
+        var newListTable = createStocksTable(dailyListsChange.newlists, name)
+        var oldListTable = createStocksTable(dailyListsChange.oldlists, name)
+        title = `今日${newListTable}<br/>昨日${oldListTable}`        
+      }
 
       toolTip && toolTip.dispose()
       toolTip = new Tooltip(el, {
@@ -340,6 +368,7 @@
         var ptcchange = data[name].data[data[name].data.length - 1]
         var text = (name.slice(-1) === '榜') ? name.slice(0, -1): name
         shtml += `<li name="${name}" >
+          <a href="#" onmouseover="onHoverTodayCharts(this, '${name}', true)">Ξ</a>
           <a href="#" onclick="onChangeTodayCharts('${name}')">${text.toUpperCase()}</a>
           (<a href="#" onmouseover="onHoverTodayCharts(this, '${name}')">%${ptcchange}</a>)
           </li>`
