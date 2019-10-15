@@ -51,16 +51,16 @@
 				'daily-open-profit': [],				
 			}
 
-			let length = datas['daily-close-ptcchange'].length
-
-			for (let index = length - 1; index >= 0; index--) {
+			for (let index in datas['daily-close-ptcchange']) {
 				if (index%2 == 0) {
 					let date = datas['daily-close-ptcchange'][index]
 					labels.push(date)
 				} else {
 					data['daily-close-ptcchange'].push(datas['daily-close-ptcchange'][index])
-					data['daily-close-profit'].push(datas['daily-close-profit'][index])
-					
+
+					if(datas['daily-close-profit']) {
+						data['daily-close-profit'].push(datas['daily-close-profit'][index])
+					}
 					if(datas['daily-open-ptcchange']) {
 						data['daily-open-ptcchange'].push(datas['daily-open-ptcchange'][index])
 					}
