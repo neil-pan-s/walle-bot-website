@@ -1,0 +1,441 @@
+
+<!-- [重要] file协议载入 浏览器由于安全限制 会禁止iframe显示 注意关闭浏览器的安全限制 -->
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>::: Walle Stocks Center :::</title>
+  <script src="./lib/url.js"></script>
+  <script src="./lib/moment.min.js"></script>
+  <script src="./lib/popper.min.js"></script>
+  <script src="./lib/tooltip.min.js"></script>
+  <link rel="stylesheet" href="./lib/popper.css" />
+  <style>
+    * {
+      padding: 0;
+      margin: 0;
+    }
+
+    html,body {
+      width: 100%;
+      height: 110%;
+
+      color: #1d1f21;
+      font-size: 17px;
+      font-family: "Menlo", "Meslo LG", "Microsoft Yahei", monospace;
+      font-weight: 400;
+    }
+
+    iframe {
+      width: 90%;
+      height: 90%;
+      margin: auto;
+      display: block;
+    }
+
+    ul {
+      list-style: none;
+      text-align: center;
+      padding: 20px;
+      width: 80%;
+      margin: auto;
+    }
+
+    li {
+      text-align: center;
+      display: inline-block;
+      padding: 5px 15px;
+    }
+
+    li.selected {
+      color:rgb(255, 99, 132);
+    }
+   
+    li:hover {
+      color:rgb(255, 99, 132);
+      transition: color 0.3s linear, background-color 0.3s linear;
+    }
+
+    a {
+      text-decoration: none;
+      color: inherit;
+    }
+
+    .without {
+      text-decoration: line-through;
+    }
+
+    #nav {
+      width: 80%;
+    }
+
+    #nav a:hover {
+      border-bottom: #000 dotted 1px;
+    }
+
+    #mask {
+      background: #fff;
+      opacity: 0.5;
+      display: none;
+      align-items:center;
+      justify-content:center;
+      font: 48px;
+      font-weight: bold;
+
+      position: fixed;
+      top: 10%;
+      left: 0;
+      width: 100%;
+      height: 80%;
+    }
+
+    .tooltip {
+      background: #FFC107;
+      color: #fff;
+      width: auto;
+      /* max-width: 70%; */
+      box-shadow: none;
+    }
+
+    .tooltip .table {
+      font-size: 12px;
+      margin-top: 10px;
+    }
+
+    .tooltip .table th {
+      min-width: 100px;
+    }    
+
+    .tooltip .table .tbody {
+      font-weight: 300;
+    }
+
+  </style>
+</head>
+<body>
+
+  <div id="mask"> Walle Stock Market </div>
+
+  <ul id="switch">
+    <li id="today-trace"  class="selected"><a href="?mode=today-trace">今日数据</a></li>
+    <li id="daily-trace"><a href="?mode=daily-trace">近期跟踪</a></li>
+    <li id="history-trace"><a href="?mode=history-trace">历史数据</a>(<a id="limit-up-switch" class="without" href="#" onclick="onLimitUpSwitch(this)">10%</a>)</li>
+  </ul>
+  
+  <ul id="nav"></ul>
+  <iframe id="charts" src="" frameborder="0" scrolling="no"></iframe>
+
+  <script>
+    var mode = url('?mode') || 'today-trace'
+    var collections = {
+      // 访问地址 ?mode=history-trace-with-limit-up-sotcks
+      // 捕获榜单包含涨停股 但无法买入操作 追踪数据计算收益有偏差(偏大很多)
+      'history-trace-with-limit-up-sotcks': './collections/history-trace-with-limit-up-stocks/',
+      // 访问地址 ?mode=history-trace-without-limit-up-sotcks
+      // 捕获榜单不包含涨停股 接近实际买入操作
+      'history-trace-without-limit-up-sotcks': './collections/history-trace-without-limit-up-stocks/',
+
+      'history-trace': './collections/history-trace/',
+      'daily-trace': './collections/daily-trace/',
+    }
+    var dailyListsChange = {}
+    var dailyListsCapture = {}
+    var dailyNavSelected = ''
+    var mask = document.getElementById('mask')
+    var iframe = document.getElementById('charts')
+    var interval = 0
+    var toolTip = null
+      
+    function showMask(msg) {
+      mask.style.display = 'flex'
+      msg && (maks.innerHTML = msg)
+    }
+
+    function hideMask() {
+      mask.style.display = 'none'
+    }
+
+    function onLimitUpSwitch(el) {
+      if (url('?mode') === 'history-trace-with-limit-up-sotcks') {
+        location.href="?mode=history-trace-without-limit-up-sotcks"
+      } else {
+        location.href="?mode=history-trace-with-limit-up-sotcks"
+      } 
+    }
+
+    async function initWalleStockDevTool() {      
+      if ( location.host.includes('localhost') ) {
+        // dev use , 1 min 
+        interval = window.__Walle_Stock_Interval_Capture_Start(60*1000, true)
+      } else {
+        // production use , default 5 min
+        interval = window.__Walle_Stock_Interval_Capture_Start()
+      }
+    }
+
+    async function initWalleStockData() {
+      var date = moment().format('YYYYMMDD')
+      var lastdate = moment().subtract(1, 'day').format('YYYYMMDD')
+      
+      localStorage.removeItem(`__Walle_Stock_Daily_Trace_${lastdate}`)
+      localStorage.removeItem(`__Walle_Stock_Daily_Capture_${lastdate}`)
+
+      var sdailyListsChange = await localStorage.getItem(`__Walle_Stock_Daily_Trace_${date}`) 
+      if (sdailyListsChange) {
+        dailyListsChange = JSON.parse(sdailyListsChange)
+        console.log('@initWalleStockDevTool@ Trace ', dailyListsChange)
+        buildTodayNav()
+        hideMask()
+      }
+
+      var sTodayCaptureLists = await localStorage.getItem(`__Walle_Stock_Daily_Capture_${date}`) 
+      if (sTodayCaptureLists) {
+        dailyListsCapture = JSON.parse(sTodayCaptureLists)
+        console.log('@initWalleStockDevTool@ Capture ', dailyListsCapture)
+      }
+    }
+
+    function onSwitchToday() {
+      showMask()
+      iframe.src=`./charts.html?mode=today-trace`
+      iframe.onload = initWalleStockData
+
+      if ( location.host.includes('localhost') ) {
+        // debug use 
+        injectScript('http://localhost:8080/walle-stock.min.js',initWalleStockDevTool)
+      } else {
+        // production use 
+        injectScript('../walle-stock.min.js',initWalleStockDevTool)
+      }
+
+      window.addEventListener('__Walle_Stock_Daily_Capture_Event', async function ({ detail }) {
+        console.log('#__Walle_Stock_Daily_Capture_Event# ', detail)
+        var date = moment().format('YYYYMMDD')
+
+        dailyListsCapture = detail
+        await localStorage.setItem(`__Walle_Stock_Daily_Capture_${date}`, JSON.stringify(dailyListsCapture))
+      })
+
+      window.addEventListener('__Walle_Stock_Daily_Trace_Event', async function ({ detail }) {
+        var time = moment().format('HH:mm:ss')
+        var date = moment().format('YYYYMMDD')
+        console.log('#__Walle_Stock_Daily_Trace_Event# ', time, detail)
+
+        // every day reset dailyListsChange
+        if (dailyListsChange.date !== date) {
+          dailyListsChange = {
+            date,
+            changes: {},
+            newlists: {},
+            oldlists: {},
+          }
+        }
+
+        var data = detail.changes
+        var keys = Object.keys(data)
+        for (var list_name of keys) {
+          var value = data[list_name]
+
+          if (!dailyListsChange.changes[list_name]) { 
+            dailyListsChange.changes[list_name] = {
+              time: [time],
+              data: [value]
+            }
+          } else {
+            dailyListsChange.changes[list_name].time.push(time)
+            dailyListsChange.changes[list_name].data.push(value)
+          }
+        }
+
+        dailyListsChange.newlists = detail.newlists
+        dailyListsChange.oldlists = detail.oldlists
+
+        console.log(`#__Walle_Stock_Daily_Trace_${date}# `, dailyListsChange)
+        await localStorage.setItem(`__Walle_Stock_Daily_Trace_${date}`, JSON.stringify(dailyListsChange))
+
+        buildTodayNav()
+        hideMask()
+      }) 
+    }
+
+    function onChangeTodayCharts(name) {
+      dailyNavSelected = name
+      var nav = document.getElementById('nav')
+      
+      var liSelected = document.querySelector('#nav li.selected')
+      if (liSelected) { liSelected.removeAttribute('class') }
+      var el = document.querySelector(`#nav li[name="${name}"]`)
+      el && el.setAttribute('class', 'selected')
+
+      console.log('#call __Walle_Charts_Callback# ', dailyNavSelected, dailyListsChange.changes[dailyNavSelected])
+      iframe.contentWindow.window.__Walle_Charts_Callback(dailyListsChange.changes[dailyNavSelected])
+    }
+
+    function createStocksTable(list, name) {
+      var translator = {
+        code: '股票代码',
+        name: '股票简称',
+        price: '股价',
+        zdf: '涨跌幅',
+        kpj: '开盘价',
+        hsl: '换手率',
+        cjl: '成交量',
+        lrzj: '主力流入资金',
+        lczj: '主力流出资金',
+        je: '主力净流入资金',
+        ddlr: '主力大单流入',
+      }
+
+      if (!list[name]) { return }
+
+      var stockCodes = Object.keys(list[name])
+
+      var table = '<table class="table">'
+
+      var thead = `<thead><tr>`
+      var fieldKeys = list[name][stockCodes[0]]
+      for (var key in fieldKeys) {
+        thead += `<th scope="col">${translator[key]}</th>`
+      }
+      thead += '</tr></thead>'
+
+      var tbody = `<tbody>`
+      for (var code of stockCodes) {
+        tbody += '<tr>'
+        var stock = list[name][code]
+        for (var field in fieldKeys ) {
+          tbody += `<th scope="row">${stock[field]}</th>`
+        }
+        tbody += '</tr>'
+      }  
+      tbody += `</tbody>`
+
+      table += thead + tbody + '</table>'
+
+      return table
+    }
+
+    async function onHoverTodayCharts(el, name, isTodayCaptureList = false) {
+      var title = ''
+
+      if (isTodayCaptureList) {
+        if(dailyListsCapture[name]) {
+          // 今日捕获数据
+          var listTable = createStocksTable(dailyListsCapture, name)
+          title = `今日${listTable}<br/>`    
+        }    
+      } else {
+        // 昨日追踪数据
+        var newListTable = createStocksTable(dailyListsChange.newlists, name)
+        var oldListTable = createStocksTable(dailyListsChange.oldlists, name)
+        title = `今日${newListTable}<br/>昨日${oldListTable}`        
+      }
+
+      toolTip && toolTip.dispose()
+      toolTip = new Tooltip(el, {
+        title,
+        html: true,
+        delay: { show: 1000, hide: 300 },
+        popperOptions: {
+          placement: 'bottom',
+          modifiers: {
+            preventOverflow: {
+              boundariesElement: document.querySelector('body'),
+            },
+          },
+        },
+      });
+
+      return false
+    }
+
+    function buildTodayNav() {
+      var nav = document.getElementById('nav')
+      var data = dailyListsChange.changes
+      var names = Object.keys(data)
+
+      var index_ptcchange = data['上证指数'].data[data['上证指数'].data.length - 1]
+      var shtml = `<li name="上证指数" >
+        <a href="#" onclick="onChangeTodayCharts('上证指数')" >上证指数</a>
+        (<a href="#" onmouseover="onHoverTodayCharts(this, '上证指数')">%${index_ptcchange}</a>)
+        </li>`
+      for (var name of names) {
+        if (name === '跌幅榜' || name === '上证指数') { continue }
+  
+        var ptcchange = data[name].data[data[name].data.length - 1]
+        var text = (name.slice(-1) === '榜') ? name.slice(0, -1): name
+        shtml += `<li name="${name}" >
+          <a href="#" onmouseover="onHoverTodayCharts(this, '${name}', true)">Ξ</a>
+          <a href="#" onclick="onChangeTodayCharts('${name}')">${text.toUpperCase()}</a>
+          (<a href="#" onmouseover="onHoverTodayCharts(this, '${name}')">%${ptcchange}</a>)
+          </li>`
+      }
+      nav.innerHTML = shtml
+
+      onChangeTodayCharts(dailyNavSelected || '上证指数')
+    }
+
+    function onSwitch() {
+      var liSelected = document.querySelector('#switch li.selected')
+      if (liSelected) { liSelected.removeAttribute('class') }
+      var el = document.querySelector(`#switch #${mode}`)
+      if(el ) { el.setAttribute('class', 'selected') }
+
+      (mode === 'today-trace') ? onSwitchToday() : onSwitchDailyOrHistory()
+    }
+
+    function onSwitchDailyOrHistory() {
+      var collectionJs = `${collections[mode]}/index.js`
+      injectScript(collectionJs)
+    }
+
+    function onChangeDailyOrHistoryCharts(list_name) {
+      iframe.src=`./charts.html?name=${list_name}&collection=${collections[mode]}`
+      // iframe.contentWindow.location.reload(true)
+
+      var nav = document.getElementById('nav')
+      
+      var liSelected = document.querySelector('#nav li.selected')
+      if (liSelected) { liSelected.removeAttribute('class') }
+      document.querySelector(`#nav li[name="${list_name}"]`).setAttribute('class', 'selected')
+    }
+    
+    window.__Walle_Stocks_Callback = function (data) {
+      var nav = document.getElementById('nav')
+      var names = data.names.split(',')
+
+      // 上证指数在第一位
+      var shtml = `<li onclick="onChangeDailyOrHistoryCharts('上证指数')" name="上证指数" >上证指数</li>`
+      for (var name of names) {
+        if (name === '跌幅榜' || name === '上证指数') { continue }
+
+        var text = (name.slice(-1) === '榜') ? name.slice(0, -1): name
+        shtml += `<li onclick="onChangeDailyOrHistoryCharts('${name}')" name="${name}" >${text.toUpperCase()}</li>`
+      }
+      nav.innerHTML = shtml
+
+      onChangeDailyOrHistoryCharts('上证指数')
+    }
+
+
+    function injectScript(src, cb) { 
+			var e = document.createElement('script'); 
+			e.type = 'text/javascript'; 
+      e.src = src; 
+      e.onload = cb
+			document.body.appendChild(e) 
+		}
+
+    window.onload = function() {
+      onSwitch()
+
+      if (url('?mode') === 'history-trace-with-limit-up-sotcks') {
+        document.getElementById('limit-up-switch').removeAttribute('class', 'without')
+      }
+    }
+  </script>
+</body>
+</html>
