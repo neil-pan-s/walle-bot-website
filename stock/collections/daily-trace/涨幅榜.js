@@ -3,6 +3,7 @@ __Walle_Charts_Callback(
 	"name": "涨幅榜",
 	"profit": {
 		"max": 194.21999999999997,
+		"normal": 194.21999999999997,
 		"strategy": 194.21999999999997,
 		"open-crash": 0,
 		"stop-crash": 0,

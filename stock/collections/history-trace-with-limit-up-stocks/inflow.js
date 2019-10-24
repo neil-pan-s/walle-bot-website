@@ -3,6 +3,7 @@ __Walle_Charts_Callback(
 	"name": "inflow",
 	"profit": {
 		"max": 3102.2799999999997,
+		"normal": -0.020000000000170104,
 		"strategy": 1981.2299999999989,
 		"open-crash": -746,
 		"stop-crash": -862.8100000000002,

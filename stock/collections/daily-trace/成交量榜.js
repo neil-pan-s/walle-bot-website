@@ -3,6 +3,7 @@ __Walle_Charts_Callback(
 	"name": "成交量榜",
 	"profit": {
 		"max": 56.64,
+		"normal": -34.49999999999999,
 		"strategy": 36.64,
 		"open-crash": 0,
 		"stop-crash": -61.14,

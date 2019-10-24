@@ -3,6 +3,7 @@ __Walle_Charts_Callback(
 	"name": "量比榜",
 	"profit": {
 		"max": 26.14,
+		"normal": -89.05999999999999,
 		"strategy": 6.139999999999999,
 		"open-crash": 0,
 		"stop-crash": -80.6,

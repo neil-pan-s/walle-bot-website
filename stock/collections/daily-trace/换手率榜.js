@@ -3,6 +3,7 @@ __Walle_Charts_Callback(
 	"name": "换手率榜",
 	"profit": {
 		"max": 14.82,
+		"normal": -182.4,
 		"strategy": -5.179999999999999,
 		"open-crash": 0,
 		"stop-crash": -147.22,

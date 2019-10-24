@@ -3,6 +3,7 @@ __Walle_Charts_Callback(
 	"name": "资金流出榜",
 	"profit": {
 		"max": 34.13,
+		"normal": -60.61000000000001,
 		"strategy": 10.74,
 		"open-crash": 0,
 		"stop-crash": -61.35,

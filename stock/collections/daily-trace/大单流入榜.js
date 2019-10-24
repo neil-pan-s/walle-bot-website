@@ -3,6 +3,7 @@ __Walle_Charts_Callback(
 	"name": "大单流入榜",
 	"profit": {
 		"max": 52.800000000000004,
+		"normal": -32.4,
 		"strategy": 32.800000000000004,
 		"open-crash": 0,
 		"stop-crash": -55.2,

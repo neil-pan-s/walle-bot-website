@@ -3,6 +3,7 @@ __Walle_Charts_Callback(
 	"name": "supinflow",
 	"profit": {
 		"max": 2953.76,
+		"normal": -250.5900000000001,
 		"strategy": 1839.8999999999996,
 		"open-crash": -815,
 		"stop-crash": -869.8399999999997,
