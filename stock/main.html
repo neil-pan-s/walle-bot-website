@@ -178,8 +178,11 @@
 
     async function initWalleStockData() {
       var date = moment().format('YYYYMMDD')
-      var lastdate = moment().subtract(1, 'day').format('YYYYMMDD')
       
+      // 保留前一天数据 用于复盘分析
+      // var lastdate = moment().subtract(1, 'day').format('YYYYMMDD')
+      var lastdate = moment().subtract(2, 'days').format('YYYYMMDD')
+
       localStorage.removeItem(`__Walle_Stock_Daily_Trace_${lastdate}`)
       localStorage.removeItem(`__Walle_Stock_Daily_Capture_${lastdate}`)
 
