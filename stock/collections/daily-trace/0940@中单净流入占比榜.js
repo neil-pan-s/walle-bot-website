@@ -1,21 +1,21 @@
 __Walle_Charts_Callback(
 {
-	"name": "中单净流入占比榜",
+	"name": "0940@中单净流入占比榜",
 	"profit": {
 		"max": 33.620000000000005,
-		"normal": 1.6300000000000012,
-		"strategy": 14.669999999999998,
-		"open-crash": 0,
+		"normal": -42.3,
+		"strategy": 13.069999999999999,
+		"open-crash": -43.54,
 		"stop-crash": -1.1799999999999997,
 		"reverse-crash": 0
 	},
 	"day": {
-		"total": 10,
-		"trade": 8,
-		"rest": 2,
+		"total": 13,
+		"trade": 9,
+		"rest": 4,
 		"up": 5,
-		"down": 5,
-		"open-crash": 0,
+		"down": 8,
+		"open-crash": 2,
 		"stop-crash": 1,
 		"reverse-crash": 0
 	},
@@ -35,7 +35,9 @@ __Walle_Charts_Callback(
 		20191024,
 		5.82,
 		20191025,
-		5.19
+		5.19,
+		20191028,
+		-4.13
 	],
 	"daily-close-profit": [
 		20191014,
@@ -53,7 +55,9 @@ __Walle_Charts_Callback(
 		20191024,
 		10.54,
 		20191025,
-		14.669999999999998
+		14.669999999999998,
+		20191028,
+		13.069999999999999
 	],
 	"daily-open-ptcchange": [
 		20191014,
@@ -71,7 +75,9 @@ __Walle_Charts_Callback(
 		20191024,
 		-1.4,
 		20191025,
-		-0.63
+		-0.63,
+		20191028,
+		-9.32
 	],
 	"daily-close-ptcchange": [
 		20191014,
@@ -89,6 +95,8 @@ __Walle_Charts_Callback(
 		20191024,
 		1.46,
 		20191025,
-		4.13
+		4.13,
+		20191028,
+		-1.6
 	]
 })

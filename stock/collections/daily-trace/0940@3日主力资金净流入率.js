@@ -1,22 +1,22 @@
 __Walle_Charts_Callback(
 {
-	"name": "3日主力资金净流入率",
+	"name": "0940@3日主力资金净流入率",
 	"profit": {
 		"max": 105.42,
-		"normal": 59.47,
-		"strategy": 95.46000000000001,
+		"normal": 33.84,
+		"strategy": 87.56,
 		"open-crash": 0,
-		"stop-crash": -7.77,
+		"stop-crash": -8.469999999999999,
 		"reverse-crash": 0
 	},
 	"day": {
-		"total": 11,
-		"trade": 7,
-		"rest": 4,
+		"total": 14,
+		"trade": 8,
+		"rest": 6,
 		"up": 5,
-		"down": 6,
+		"down": 9,
 		"open-crash": 0,
-		"stop-crash": 1,
+		"stop-crash": 2,
 		"reverse-crash": 0
 	},
 	"daily-open-profit": [
@@ -33,7 +33,9 @@ __Walle_Charts_Callback(
 		20191023,
 		1.29,
 		20191025,
-		3.34
+		3.34,
+		20191028,
+		1.3399999999999999
 	],
 	"daily-close-profit": [
 		20191011,
@@ -49,7 +51,9 @@ __Walle_Charts_Callback(
 		20191023,
 		80.07000000000001,
 		20191025,
-		95.46000000000001
+		95.46000000000001,
+		20191028,
+		87.56
 	],
 	"daily-open-ptcchange": [
 		20191011,
@@ -65,7 +69,9 @@ __Walle_Charts_Callback(
 		20191023,
 		2.02,
 		20191025,
-		2.05
+		2.05,
+		20191028,
+		-2
 	],
 	"daily-close-ptcchange": [
 		20191011,
@@ -81,6 +87,8 @@ __Walle_Charts_Callback(
 		20191023,
 		-5.21,
 		20191025,
-		15.39
+		15.39,
+		20191028,
+		-7.9
 	]
 })

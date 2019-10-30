@@ -1,21 +1,21 @@
 __Walle_Charts_Callback(
 {
-	"name": "连续上涨榜",
+	"name": "0940@连续上涨榜",
 	"profit": {
 		"max": 26.4,
-		"normal": -40.46,
+		"normal": -100.21000000000001,
 		"strategy": 5.169999999999997,
-		"open-crash": -29,
+		"open-crash": -59.33,
 		"stop-crash": 0,
 		"reverse-crash": 0
 	},
 	"day": {
-		"total": 10,
+		"total": 13,
 		"trade": 6,
-		"rest": 4,
+		"rest": 7,
 		"up": 3,
-		"down": 7,
-		"open-crash": 2,
+		"down": 10,
+		"open-crash": 4,
 		"stop-crash": 0,
 		"reverse-crash": 0
 	},

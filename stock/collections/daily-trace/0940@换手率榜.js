@@ -1,21 +1,21 @@
 __Walle_Charts_Callback(
 {
-	"name": "换手率榜",
+	"name": "0940@换手率榜",
 	"profit": {
 		"max": 46.84,
-		"normal": -348.59999999999997,
+		"normal": -419.71999999999997,
 		"strategy": 4.140000000000004,
-		"open-crash": -162.65,
+		"open-crash": -266.28000000000003,
 		"stop-crash": -148.82,
 		"reverse-crash": 0
 	},
 	"day": {
-		"total": 20,
+		"total": 23,
 		"trade": 10,
-		"rest": 10,
+		"rest": 13,
 		"up": 6,
-		"down": 14,
-		"open-crash": 6,
+		"down": 17,
+		"open-crash": 9,
 		"stop-crash": 6,
 		"reverse-crash": 0
 	},

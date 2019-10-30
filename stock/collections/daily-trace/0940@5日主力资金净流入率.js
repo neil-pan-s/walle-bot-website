@@ -1,22 +1,22 @@
 __Walle_Charts_Callback(
 {
-	"name": "5日主力资金净流入率",
+	"name": "0940@5日主力资金净流入率",
 	"profit": {
 		"max": 85.84,
-		"normal": 39.25,
+		"normal": -22.009999999999994,
 		"strategy": 79.63,
-		"open-crash": 0,
-		"stop-crash": -4.24,
+		"open-crash": -21.9,
+		"stop-crash": -11.76,
 		"reverse-crash": 0
 	},
 	"day": {
-		"total": 11,
+		"total": 14,
 		"trade": 5,
-		"rest": 6,
+		"rest": 9,
 		"up": 3,
-		"down": 8,
-		"open-crash": 0,
-		"stop-crash": 2,
+		"down": 11,
+		"open-crash": 1,
+		"stop-crash": 3,
 		"reverse-crash": 0
 	},
 	"daily-open-profit": [

@@ -76,6 +76,10 @@
       border-bottom: #000 dotted 1px;
     }
 
+    #types li{
+      cursor: pointer;
+    }
+
     #mask {
       background: #fff;
       opacity: 0.5;
@@ -122,9 +126,11 @@
   <ul id="switch">
     <li id="today-trace"  class="selected"><a href="?mode=today-trace">今日数据</a></li>
     <li id="daily-trace"><a href="?mode=daily-trace">近期跟踪</a></li>
-    <li id="history-trace"><a href="?mode=history-trace">历史数据</a>(<a id="limit-up-switch" class="without" href="#" onclick="onLimitUpSwitch(this)">10%</a>)</li>
+    <li id="history-trace"><a href="?mode=history-trace">历史数据</a></li>
   </ul>
   
+  <ul id="types"></ul>
+
   <ul id="nav"></ul>
   <iframe id="charts" src="" frameborder="0" scrolling="no"></iframe>
 
@@ -143,12 +149,25 @@
     }
     var dailyListsChange = {}
     var dailyListsCapture = {}
-    var dailyNavSelected = ''
+
+    var dailyListsChangeMap = {
+      // [09:40]: { ...dailyListsChange },
+      // [14:40]: { ...dailyListsChange },
+    }
+    var dailyListsCaptureMap = {
+      // [09:40]: { ...dailyListsCapture },
+      // [14:40]: { ...dailyListsCapture },
+    }
+
     var mask = document.getElementById('mask')
     var iframe = document.getElementById('charts')
     var interval = 0
     var toolTip = null
-      
+
+    var config = {}
+    var captureTimeSelected = ''
+    var dailyNavSelected = ''
+    
     function showMask(msg) {
       mask.style.display = 'flex'
       msg && (maks.innerHTML = msg)
@@ -156,14 +175,6 @@
 
     function hideMask() {
       mask.style.display = 'none'
-    }
-
-    function onLimitUpSwitch(el) {
-      if (url('?mode') === 'history-trace-with-limit-up-sotcks') {
-        location.href="?mode=history-trace-without-limit-up-sotcks"
-      } else {
-        location.href="?mode=history-trace-with-limit-up-sotcks"
-      } 
     }
 
     async function initWalleStockDevTool() {      
@@ -188,17 +199,22 @@
 
       var sdailyListsChange = await localStorage.getItem(`__Walle_Stock_Daily_Trace_${date}`) 
       if (sdailyListsChange) {
-        dailyListsChange = JSON.parse(sdailyListsChange)
-        console.log('@initWalleStockDevTool@ Trace ', dailyListsChange)
-        buildTodayNav()
-        hideMask()
+        dailyListsChangeMap = JSON.parse(sdailyListsChange)
       }
 
       var sTodayCaptureLists = await localStorage.getItem(`__Walle_Stock_Daily_Capture_${date}`) 
       if (sTodayCaptureLists) {
-        dailyListsCapture = JSON.parse(sTodayCaptureLists)
-        console.log('@initWalleStockDevTool@ Capture ', dailyListsCapture)
+        dailyListsCaptureMap = JSON.parse(sTodayCaptureLists)
       }
+      
+      switchDataWithCaptureTime()
+      if (dailyListsChangeMap[captureTimeSelected]) {
+        buildTodayNav()
+        hideMask()
+      }
+
+      console.log('@initWalleStockDevTool@ Trace ', dailyListsChangeMap)
+      console.log('@initWalleStockDevTool@ Capture ', dailyListsCaptureMap)
     }
 
     function onSwitchToday() {
@@ -218,8 +234,11 @@
         console.log('#__Walle_Stock_Daily_Capture_Event# ', detail)
         var date = moment().format('YYYYMMDD')
 
-        dailyListsCapture = detail
-        await localStorage.setItem(`__Walle_Stock_Daily_Capture_${date}`, JSON.stringify(dailyListsCapture))
+        var captureTime = detail.time
+        dailyListsCaptureMap[captureTime] = detail.lists 
+        await localStorage.setItem(`__Walle_Stock_Daily_Capture_${date}`, JSON.stringify(dailyListsCaptureMap))
+
+        switchDataWithCaptureTime()
       })
 
       window.addEventListener('__Walle_Stock_Daily_Trace_Event', async function ({ detail }) {
@@ -227,10 +246,21 @@
         var date = moment().format('YYYYMMDD')
         console.log('#__Walle_Stock_Daily_Trace_Event# ', time, detail)
 
+        var captureTime = detail.time
         // every day reset dailyListsChange
-        if (dailyListsChange.date !== date) {
-          dailyListsChange = {
-            date,
+        if (dailyListsChangeMap.date !== date) {
+          dailyListsChangeMap = {
+            date, 
+            [captureTime]: {
+              changes: {},
+              newlists: {},
+              oldlists: {},
+            }
+          }
+        }
+
+        if (!dailyListsChangeMap[captureTime]) {
+          dailyListsChangeMap[captureTime] = {
             changes: {},
             newlists: {},
             oldlists: {},
@@ -242,29 +272,38 @@
         for (var list_name of keys) {
           var value = data[list_name]
 
-          if (!dailyListsChange.changes[list_name]) { 
-            dailyListsChange.changes[list_name] = {
+          if (!dailyListsChangeMap[captureTime].changes[list_name]) { 
+            dailyListsChangeMap[captureTime].changes[list_name] = {
               time: [time],
               data: [value]
             }
           } else {
-            dailyListsChange.changes[list_name].time.push(time)
-            dailyListsChange.changes[list_name].data.push(value)
+            dailyListsChangeMap[captureTime].changes[list_name].time.push(time)
+            dailyListsChangeMap[captureTime].changes[list_name].data.push(value)
           }
         }
 
-        dailyListsChange.newlists = detail.newlists
-        dailyListsChange.oldlists = detail.oldlists
+        dailyListsChangeMap[captureTime].newlists = detail.newlists
+        dailyListsChangeMap[captureTime].oldlists = detail.oldlists
 
-        console.log(`#__Walle_Stock_Daily_Trace_${date}# `, dailyListsChange)
-        await localStorage.setItem(`__Walle_Stock_Daily_Trace_${date}`, JSON.stringify(dailyListsChange))
+        console.log(`#__Walle_Stock_Daily_Trace_${date}# `, dailyListsChangeMap)
+        await localStorage.setItem(`__Walle_Stock_Daily_Trace_${date}`, JSON.stringify(dailyListsChangeMap))
 
+        switchDataWithCaptureTime()
         buildTodayNav()
         hideMask()
       }) 
     }
 
     function onChangeTodayCharts(name) {
+      if (!dailyListsChange) { 
+        // clear chart
+        if(iframe.contentWindow.window.__Walle_Charts_Callback) { 
+          iframe.contentWindow.window.__Walle_Charts_Callback({ time:[], data: [] })
+        }
+        return 
+      }
+
       dailyNavSelected = name
       var nav = document.getElementById('nav')
       
@@ -324,6 +363,8 @@
     async function onHoverTodayCharts(el, name, isTodayCaptureList = false) {
       var title = ''
 
+      if (!dailyListsChange) { return }
+
       if (isTodayCaptureList) {
         if(dailyListsCapture[name]) {
           // 今日捕获数据
@@ -357,6 +398,12 @@
 
     function buildTodayNav() {
       var nav = document.getElementById('nav')
+      if (!dailyListsChange) { 
+        nav.innerHTML = ''
+        onChangeTodayCharts()
+        return 
+      }
+
       var data = dailyListsChange.changes
       var names = Object.keys(data)
 
@@ -405,24 +452,75 @@
       if (liSelected) { liSelected.removeAttribute('class') }
       document.querySelector(`#nav li[name="${list_name}"]`).setAttribute('class', 'selected')
     }
-    
-    window.__Walle_Stocks_Callback = function (data) {
-      var nav = document.getElementById('nav')
-      var names = data.names.split(',')
 
-      // 上证指数在第一位
-      var shtml = `<li onclick="onChangeDailyOrHistoryCharts('上证指数')" name="上证指数" >上证指数</li>`
+    function buildDailyOrHistoryNav(names) {
+      var nav = document.getElementById('nav')
+      var nameOfIndex = '上证指数'
+      var isExistIndex = false 
+
+      var shtml = ''
       for (var name of names) {
-        if (name === '跌幅榜' || name === '上证指数') { continue }
+        if (name.includes('跌幅榜')) { continue }
 
         var text = (name.slice(-1) === '榜') ? name.slice(0, -1): name
-        shtml += `<li onclick="onChangeDailyOrHistoryCharts('${name}')" name="${name}" >${text.toUpperCase()}</li>`
+        var sli = `<li onclick="onChangeDailyOrHistoryCharts('${name}')" name="${name}" >${text.toUpperCase()}</li>`
+
+        // 上证指数在第一位
+        if (name.includes('上证指数')) {
+          nameOfIndex = name
+          shtml = sli + shtml
+
+          isExistIndex = true
+        } else {
+          shtml += sli
+        }
       }
+
+      if (!isExistIndex) {
+        shtml = `<li onclick="onChangeDailyOrHistoryCharts('上证指数')" name="上证指数" >上证指数</li>` + shtml
+      }
+
       nav.innerHTML = shtml
 
-      onChangeDailyOrHistoryCharts('上证指数')
+      onChangeDailyOrHistoryCharts(nameOfIndex)
     }
 
+    function buildDailyNav() {
+      var lis = document.querySelectorAll('#nav li') 
+      var nameOfIndex = '上证指数'
+
+      if (!lis.length) { return }
+
+      for(var li of lis) {
+        var name = li.getAttribute('name')
+        var time = captureTimeSelected.replace(':','')
+        if (name.includes(time)) {
+          li.style.display = 'inline-block'
+          
+          // 0940@上证指数 => 上证指数
+          if(li.innerText[4] === '@') {
+            li.innerText = name.slice(5)
+          }
+        } else {
+          li.style.display = 'none'
+        }
+
+        if (name.includes('上证指数')) {
+          nameOfIndex = name
+        }
+      }
+
+      onChangeDailyOrHistoryCharts(nameOfIndex)
+    }
+    
+    window.__Walle_Stocks_Callback = function (data) {
+      var names = data.names.split(',')
+      buildDailyOrHistoryNav(names)
+
+      if (mode === 'daily-trace') {
+        buildDailyNav()
+      }
+    }
 
     function injectScript(src, cb) { 
 			var e = document.createElement('script'); 
@@ -432,12 +530,85 @@
 			document.body.appendChild(e) 
 		}
 
-    window.onload = function() {
-      onSwitch()
+    function initHistoryTypeNav() {
+      var nav = document.getElementById('types')
 
-      if (url('?mode') === 'history-trace-with-limit-up-sotcks') {
-        document.getElementById('limit-up-switch').removeAttribute('class', 'without')
+      var sHtml = ``
+      if (mode === 'history-trace') {
+        sHtml += `<li class="selected"><a href="?mode=history-trace">组合</a></li>`
+      } else {
+        sHtml += `<li><a href="?mode=history-trace">组合</a></li>`
       }
+      
+      if (mode === 'history-trace-without-limit-up-sotcks') {
+        sHtml += `<li class="selected"><a class="without" href="?mode=history-trace-without-limit-up-sotcks" >10%</a></li>`
+      } else {
+        sHtml += `<li><a class="without" href="?mode=history-trace-without-limit-up-sotcks" >10%</a></li>`
+      }
+
+      if (mode === 'history-trace-with-limit-up-sotcks') {
+        sHtml += `<li class="selected"><a class="with" href="?mode=history-trace-with-limit-up-sotcks" >10%</a></li>`
+      } else {
+        sHtml += `<li><a class="with" href="?mode=history-trace-with-limit-up-sotcks" >10%</a></li>`
+      }
+      
+      nav.innerHTML = sHtml
+    }
+
+    async function initTimesNav() {
+      var nav = document.getElementById('types')
+      var times = config.time.capture
+
+      var sHtml = ''
+      for(var time of times) {
+        sHtml += `<li onclick="onChangeTimesNav(this)">${time}</li>`
+      }
+      nav.innerHTML = sHtml
+
+      onChangeTimesNav(document.querySelector('#types li:first-child'))
+    }
+
+    function onChangeTimesNav(el) {
+      var lis = document.querySelectorAll('#types li')
+      for(var li of lis) {
+        li.removeAttribute('class', 'selected')
+      }
+
+      el.setAttribute('class', 'selected')
+
+      captureTimeSelected = el.innerText
+      switchDataWithCaptureTime()
+
+      ;(mode === 'today-trace') ? buildTodayNav() : buildDailyNav()
+    }
+
+    function switchDataWithCaptureTime() {
+      dailyListsCapture = dailyListsCaptureMap[captureTimeSelected]
+      dailyListsChange = dailyListsChangeMap[captureTimeSelected]
+    }
+
+    async function loadConfig() {
+      try {
+        var sConfig = await localStorage.getItem(`localforage/__Walle_Stock_Bot_Config`) 
+        config = JSON.parse(sConfig)
+
+        captureTimeSelected = config.time.capture[0]
+      } catch {
+        // first time load config data not loaded, reload.
+        setTimeout(() => location.reload(), 1000) 
+      }
+    }
+
+    window.onload = async function() {
+      await loadConfig()
+
+      if (['daily-trace', 'today-trace'].includes(mode)) {
+        initTimesNav()
+      } else {
+        initHistoryTypeNav()
+      }
+
+      onSwitch()
     }
   </script>
 </body>

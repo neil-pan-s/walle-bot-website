@@ -1,22 +1,22 @@
 __Walle_Charts_Callback(
 {
-	"name": "超大单净流入榜",
+	"name": "0940@超大单净流入榜",
 	"profit": {
-		"max": 12.95,
-		"normal": -90.06,
-		"strategy": 4.97,
-		"open-crash": -32.44,
-		"stop-crash": -10.590000000000002,
+		"max": 39.15,
+		"normal": -113.05,
+		"strategy": 21.169999999999998,
+		"open-crash": -51.17999999999999,
+		"stop-crash": -17.64,
 		"reverse-crash": 0
 	},
 	"day": {
-		"total": 10,
-		"trade": 5,
-		"rest": 5,
-		"up": 3,
-		"down": 7,
-		"open-crash": 2,
-		"stop-crash": 2,
+		"total": 13,
+		"trade": 7,
+		"rest": 6,
+		"up": 4,
+		"down": 9,
+		"open-crash": 3,
+		"stop-crash": 3,
 		"reverse-crash": 0
 	},
 	"daily-open-profit": [
@@ -29,7 +29,11 @@ __Walle_Charts_Callback(
 		20191023,
 		4.66,
 		20191025,
-		2.47
+		2.47,
+		20191028,
+		0.010000000000000231,
+		20191029,
+		-1.7299999999999998
 	],
 	"daily-close-profit": [
 		20191014,
@@ -41,7 +45,11 @@ __Walle_Charts_Callback(
 		20191023,
 		-6.36,
 		20191025,
-		4.97
+		4.97,
+		20191028,
+		31.169999999999998,
+		20191029,
+		21.169999999999998
 	],
 	"daily-open-ptcchange": [
 		20191014,
@@ -53,7 +61,11 @@ __Walle_Charts_Callback(
 		20191023,
 		-1.21,
 		20191025,
-		-2.19
+		-2.19,
+		20191028,
+		-2.46,
+		20191029,
+		-1.74
 	],
 	"daily-close-ptcchange": [
 		20191014,
@@ -65,6 +77,10 @@ __Walle_Charts_Callback(
 		20191023,
 		-1.08,
 		20191025,
-		11.33
+		11.33,
+		20191028,
+		26.2,
+		20191029,
+		-10
 	]
 })
