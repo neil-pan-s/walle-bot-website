@@ -557,11 +557,10 @@
 
     async function initTimesNav() {
       var nav = document.getElementById('types')
-      var times = config.time.capture
 
       var sHtml = ''
-      for(var time of times) {
-        sHtml += `<li onclick="onChangeTimesNav(this)">${time}</li>`
+      for(var rule of config.rules) {
+        sHtml += `<li onclick="onChangeTimesNav(this)">${rule.capture}</li>`
       }
       nav.innerHTML = sHtml
 
@@ -592,7 +591,7 @@
         var sConfig = await localStorage.getItem(`localforage/__Walle_Stock_Bot_Config`) 
         config = JSON.parse(sConfig)
 
-        captureTimeSelected = config.time.capture[0]
+        captureTimeSelected = config.rules[0].capture
       } catch {
         // first time load config data not loaded, reload.
         setTimeout(() => location.reload(), 1000) 
