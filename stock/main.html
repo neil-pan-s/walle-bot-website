@@ -561,10 +561,17 @@
       var nav = document.getElementById('types')
 
       var sHtml = ''
+      var sT0Html = ''
       for(var rule of config.rules) {
         sHtml += `<li onclick="onChangeTimesNav(this)">${rule.capture}</li>`
+        sT0Html += `<li onclick="onChangeTimesNav(this)">T0-${rule.capture}</li>`
       }
-      nav.innerHTML = sHtml
+
+      if (mode === 'today-trace') {
+        nav.innerHTML = sHtml + sT0Html
+      } else {
+        nav.innerHTML = sHtml
+      }
 
       onChangeTimesNav(document.querySelector('#types li:first-child'))
     }
