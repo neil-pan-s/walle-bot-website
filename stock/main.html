@@ -363,15 +363,17 @@
     async function onHoverTodayCharts(el, name, isTodayCaptureList = false) {
       var title = ''
 
-      if (!dailyListsChange) { return }
-
       if (isTodayCaptureList) {
+        if(!dailyListsCapture) { return }
+
         if(dailyListsCapture[name]) {
           // 今日捕获数据
           var listTable = createStocksTable(dailyListsCapture, name)
           title = `今日${listTable}<br/>`    
         }    
       } else {
+        if (!dailyListsChange) { return }
+
         // 昨日追踪数据
         var newListTable = createStocksTable(dailyListsChange.newlists, name)
         var oldListTable = createStocksTable(dailyListsChange.oldlists, name)
