@@ -1,6 +1,6 @@
 __Walle_Charts_Callback(
 {
-	"name": "0940@连续上涨榜",
+	"name": "1430@连续上涨榜",
 	"profit": {
 		"max": 26.4,
 		"normal": -100.21000000000001,

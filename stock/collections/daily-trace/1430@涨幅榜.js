@@ -1,6 +1,6 @@
 __Walle_Charts_Callback(
 {
-	"name": "0940@涨幅榜",
+	"name": "1430@涨幅榜",
 	"profit": {
 		"max": 246.89999999999995,
 		"normal": 64.80999999999996,

@@ -1,6 +1,6 @@
 __Walle_Charts_Callback(
 {
-	"name": "0940@3日主力资金净流入率",
+	"name": "1430@3日主力资金净流入率",
 	"profit": {
 		"max": 105.42,
 		"normal": 33.84,

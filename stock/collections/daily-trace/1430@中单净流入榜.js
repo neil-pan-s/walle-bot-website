@@ -1,6 +1,6 @@
 __Walle_Charts_Callback(
 {
-	"name": "0940@中单净流入榜",
+	"name": "1430@中单净流入榜",
 	"profit": {
 		"max": 81.85,
 		"normal": -114.24000000000001,

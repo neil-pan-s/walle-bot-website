@@ -1,6 +1,6 @@
 __Walle_Charts_Callback(
 {
-	"name": "0940@持续放量榜",
+	"name": "1430@持续放量榜",
 	"profit": {
 		"max": 61.21,
 		"normal": -36.14,

@@ -1,6 +1,6 @@
 __Walle_Charts_Callback(
 {
-	"name": "0940@前日龙虎榜",
+	"name": "1430@前日龙虎榜",
 	"profit": {
 		"max": 8.49,
 		"normal": -102.92999999999999,

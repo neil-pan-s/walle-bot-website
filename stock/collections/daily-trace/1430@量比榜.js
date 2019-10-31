@@ -1,6 +1,6 @@
 __Walle_Charts_Callback(
 {
-	"name": "0940@量比榜",
+	"name": "1430@量比榜",
 	"profit": {
 		"max": 56.86000000000001,
 		"normal": -342.4,

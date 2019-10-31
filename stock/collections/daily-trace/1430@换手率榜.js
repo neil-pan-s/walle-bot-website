@@ -1,6 +1,6 @@
 __Walle_Charts_Callback(
 {
-	"name": "0940@换手率榜",
+	"name": "1430@换手率榜",
 	"profit": {
 		"max": 46.84,
 		"normal": -419.71999999999997,

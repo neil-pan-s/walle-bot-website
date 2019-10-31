@@ -1,6 +1,6 @@
 __Walle_Charts_Callback(
 {
-	"name": "0940@向上突破榜",
+	"name": "1430@向上突破榜",
 	"profit": {
 		"max": 17.18,
 		"normal": -270.08000000000004,

@@ -1,6 +1,6 @@
 __Walle_Charts_Callback(
 {
-	"name": "0940@超大单净流入占比榜",
+	"name": "1430@超大单净流入占比榜",
 	"profit": {
 		"max": 24.160000000000004,
 		"normal": -41.44,
