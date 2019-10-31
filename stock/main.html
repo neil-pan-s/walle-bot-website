@@ -179,8 +179,8 @@
 
     async function initWalleStockDevTool() {      
       if ( location.host.includes('localhost') ) {
-        // dev use , 1 min 
-        interval = window.__Walle_Stock_Interval_Capture_Start(60*1000, true)
+        // dev use , 2 mins 
+        interval = window.__Walle_Stock_Interval_Capture_Start(2*60*1000, true)
       } else {
         // production use , default 5 min
         interval = window.__Walle_Stock_Interval_Capture_Start()
