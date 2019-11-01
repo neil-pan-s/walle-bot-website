@@ -501,7 +501,8 @@
           
           // 0940@上证指数 => 上证指数
           if(li.innerText[4] === '@') {
-            li.innerText = name.slice(5)
+            var text = (name.slice(-1) === '榜') ? name.slice(0, -1): name
+            li.innerText = text.slice(5)
           }
         } else {
           li.style.display = 'none'
