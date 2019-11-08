@@ -458,7 +458,7 @@
       injectScript(collectionJs)
     }
 
-    function onChangeDailyOrHistoryCharts(list_name) {
+    async function onChangeDailyOrHistoryCharts(list_name) {
       if (!list_name) { 
         // clear chart
         if(iframe.contentWindow.window.__Walle_Charts_Callback) { 
@@ -467,8 +467,10 @@
         return 
       }
 
-      iframe.src=`./charts.html?name=${list_name}&collection=${collections[mode]}`
-      // iframe.contentWindow.location.reload(true)
+      await new Promise((resolve) => {
+        iframe.src=`./charts.html?name=${list_name}&collection=${collections[mode]}`
+        iframe.onload = resolve
+      }) 
 
       var nav = document.getElementById('nav')
       
@@ -477,7 +479,7 @@
       document.querySelector(`#nav li[name="${list_name}"]`).setAttribute('class', 'selected')
     }
 
-    function buildDailyOrHistoryNav(names) {
+    async function buildDailyOrHistoryNav(names) {
       var nav = document.getElementById('nav')
       var nameOfIndex = '上证指数'
       var isExistIndex = false 
@@ -507,10 +509,10 @@
       nav.innerHTML = shtml
 
       var defaultSeleted = nav.querySelector('li').getAttribute('name')
-      onChangeDailyOrHistoryCharts(defaultSeleted)
+      await onChangeDailyOrHistoryCharts(defaultSeleted)
     }
 
-    function buildDailyNav() {
+    async function buildDailyNav() {
       var lis = document.querySelectorAll('#nav li') 
       var defaultSeleted = ''
 
@@ -536,16 +538,15 @@
         }
       }
 
-      // wait iframe ready
-      setTimeout(() => onChangeDailyOrHistoryCharts(defaultSeleted), 100)
+      await onChangeDailyOrHistoryCharts(defaultSeleted)
     }
     
-    window.__Walle_Stocks_Callback = function (data) {
+    window.__Walle_Stocks_Callback = async function (data) {
       var names = data.names.split(',')
-      buildDailyOrHistoryNav(names)
+      await buildDailyOrHistoryNav(names)
 
       if (mode === 'daily-trace') {
-        buildDailyNav()
+        await buildDailyNav()
       }
     }
 
