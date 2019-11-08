@@ -117,6 +117,14 @@
       font-weight: 300;
     }
 
+    .toast-title, .toast-message {
+      font-size: 12px;
+    }
+
+    .toast-message {
+      padding-top: 5px;
+    }
+
   </style>
 </head>
 <body>
@@ -180,7 +188,7 @@
     async function initWalleStockDevTool() {      
       if ( location.host.includes('localhost') ) {
         // dev use , 2 mins 
-        interval = window.__Walle_Stock_Interval_Capture_Start(2*60*1000, true)
+        interval = window.__Walle_Stock_Interval_Capture_Start( 2 * 60 )
       } else {
         // production use , default 5 min
         interval = window.__Walle_Stock_Interval_Capture_Start()
@@ -409,11 +417,7 @@
       var data = dailyListsChange.changes
       var names = Object.keys(data)
 
-      var index_ptcchange = data['上证指数'].data[data['上证指数'].data.length - 1]
-      var shtml = `<li name="上证指数" >
-        <a href="#" onclick="onChangeTodayCharts('上证指数')" >上证指数</a>
-        (<a href="#" onmouseover="onHoverTodayCharts(this, '上证指数')">%${index_ptcchange}</a>)
-        </li>`
+      var shtml = ''
       for (var name of names) {
         if (name === '跌幅榜' || name === '上证指数') { continue }
   
@@ -425,9 +429,19 @@
           (<a href="#" onmouseover="onHoverTodayCharts(this, '${name}')">%${ptcchange}</a>)
           </li>`
       }
+
+      if (data['上证指数']) {
+        var index_ptcchange = data['上证指数'].data[data['上证指数'].data.length - 1]
+        shtml = `<li name="上证指数" >
+        <a href="#" onclick="onChangeTodayCharts('上证指数')" >上证指数</a>
+        (<a href="#" onmouseover="onHoverTodayCharts(this, '上证指数')">%${index_ptcchange}</a>)
+        </li>` + shtml
+      }
+
       nav.innerHTML = shtml
 
-      onChangeTodayCharts(dailyNavSelected || '上证指数')
+      var defaultSeleted = nav.querySelector('li').getAttribute('name')
+      onChangeTodayCharts(defaultSeleted)
     }
 
     function onSwitch() {
@@ -445,6 +459,14 @@
     }
 
     function onChangeDailyOrHistoryCharts(list_name) {
+      if (!list_name) { 
+        // clear chart
+        if(iframe.contentWindow.window.__Walle_Charts_Callback) { 
+          iframe.contentWindow.window.__Walle_Charts_Callback({ time:[], data: [] })
+        }
+        return 
+      }
+
       iframe.src=`./charts.html?name=${list_name}&collection=${collections[mode]}`
       // iframe.contentWindow.location.reload(true)
 
@@ -479,17 +501,18 @@
       }
 
       if (!isExistIndex) {
-        shtml = `<li onclick="onChangeDailyOrHistoryCharts('上证指数')" name="上证指数" >上证指数</li>` + shtml
+        shtml = `<li onclick="onChangeDailyOrHistoryCharts('${nameOfIndex}')" name="${nameOfIndex}" >上证指数</li>` + shtml
       }
 
       nav.innerHTML = shtml
 
-      onChangeDailyOrHistoryCharts(nameOfIndex)
+      var defaultSeleted = nav.querySelector('li').getAttribute('name')
+      onChangeDailyOrHistoryCharts(defaultSeleted)
     }
 
     function buildDailyNav() {
       var lis = document.querySelectorAll('#nav li') 
-      var nameOfIndex = '上证指数'
+      var defaultSeleted = ''
 
       if (!lis.length) { return }
 
@@ -500,20 +523,21 @@
           li.style.display = 'inline-block'
           
           // 0940@上证指数 => 上证指数
-          if(li.innerText[4] === '@') {
-            var text = (name.slice(-1) === '榜') ? name.slice(0, -1): name
-            li.innerText = text.slice(5)
+          if(li.innerText.includes('@')) {
+            var text = li.innerText.split('@')[1]
+            li.innerText = (text.slice(-1) === '榜') ? text.slice(0, -1): text
+          }
+
+          if (name.includes('上证指数')) {
+            defaultSeleted = name
           }
         } else {
           li.style.display = 'none'
         }
-
-        if (name.includes('上证指数')) {
-          nameOfIndex = name
-        }
       }
 
-      onChangeDailyOrHistoryCharts(nameOfIndex)
+      // wait iframe ready
+      setTimeout(() => onChangeDailyOrHistoryCharts(defaultSeleted), 100)
     }
     
     window.__Walle_Stocks_Callback = function (data) {
@@ -560,12 +584,13 @@
 
     async function initTimesNav() {
       var nav = document.getElementById('types')
+      const rules = [].concat(config.rules, config.intervals)
 
       var sHtml = ''
       var sT0Html = ''
-      for(var rule of config.rules) {
-        sHtml += `<li onclick="onChangeTimesNav(this)">${rule.capture}</li>`
-        sT0Html += `<li onclick="onChangeTimesNav(this)">T0-${rule.capture}</li>`
+      for(var rule of rules) {
+        sHtml += `<li onclick="onChangeTimesNav(this)">${rule.capture.toUpperCase()}</li>`
+        sT0Html += `<li onclick="onChangeTimesNav(this)">T0-${rule.capture.toUpperCase()}</li>`
       }
 
       if (mode === 'today-trace') {
@@ -585,7 +610,7 @@
 
       el.setAttribute('class', 'selected')
 
-      captureTimeSelected = el.innerText
+      captureTimeSelected = el.innerText.toLowerCase()
       switchDataWithCaptureTime()
 
       ;(mode === 'today-trace') ? buildTodayNav() : buildDailyNav()
