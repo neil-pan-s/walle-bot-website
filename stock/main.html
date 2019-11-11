@@ -176,6 +176,10 @@
     var captureTimeSelected = ''
     var dailyNavSelected = ''
     
+    // 前两个交易日数据
+    last1dayChanges = {}
+    last2dayChanges = {}
+
     function showMask(msg) {
       mask.style.display = 'flex'
       msg && (maks.innerHTML = msg)
@@ -198,9 +202,9 @@
     async function initWalleStockData() {
       var date = moment().format('YYYYMMDD')
       
-      // 保留前一天数据 用于复盘分析
+      // 保留前一周数据 用于复盘分析
       // var lastdate = moment().subtract(1, 'day').format('YYYYMMDD')
-      var lastdate = moment().subtract(2, 'days').format('YYYYMMDD')
+      var lastdate = moment().subtract(7, 'days').format('YYYYMMDD')
 
       localStorage.removeItem(`__Walle_Stock_Daily_Trace_${lastdate}`)
       localStorage.removeItem(`__Walle_Stock_Daily_Capture_${lastdate}`)
@@ -376,10 +380,11 @@
       if (isTodayCaptureList) {
         if(!dailyListsCapture) { return }
 
+        // [deprecated] - 20191111 不再通过 'Ξ' 查看今日捕获的榜单, 在 'T0-xx:xx' 直接查看
         if(dailyListsCapture[name]) {
           // 今日捕获数据
           var listTable = createStocksTable(dailyListsCapture, name)
-          title = `今日${listTable}<br/>`    
+          title = `捕获${listTable}<br/>`    
         }    
       } else {
         if (!dailyListsChange) { return }
@@ -387,7 +392,12 @@
         // 昨日追踪数据
         var newListTable = createStocksTable(dailyListsChange.newlists, name)
         var oldListTable = createStocksTable(dailyListsChange.oldlists, name)
-        title = `今日${newListTable}<br/>昨日${oldListTable}`        
+
+        if (captureTimeSelected && captureTimeSelected.startsWith('t0')) {
+          title = `跟踪${newListTable}<br/>捕获${oldListTable}`        
+        } else {
+          title = `今日${newListTable}<br/>昨日${oldListTable}`        
+        }
       }
 
       toolTip && toolTip.dispose()
@@ -408,7 +418,29 @@
       return false
     }
 
-    function buildTodayNav() {
+    function indicatorOfTodayNav(time, name) {
+      if (captureTimeSelected.startsWith('t0')) { return ''}
+
+      if (last1dayChanges[time] && last2dayChanges[time]) {
+        if (last1dayChanges[time].changes && last2dayChanges[time].changes) {
+          if (last1dayChanges[time].changes[name] && last2dayChanges[time].changes[name]) {
+            const last1dayChange = +last1dayChanges[time].changes[name].data.slice(-1)
+            const last2dayChange = +last2dayChanges[time].changes[name].data.slice(-1)
+
+            // 连续两日榜单追踪为下跌则标记为不买入
+            if (last1dayChange < 0 && last2dayChange < 0) {
+              return `<i title="前两交易日跟踪收益: ${last1dayChange}%,${last2dayChange}%">✘</i>`
+            } else {
+              return `<i title="前两交易日跟踪收益: ${last1dayChange}%,${last2dayChange}%">✔</i>`
+            }
+          }
+        }
+      }
+
+      return ''
+    }
+
+    async function buildTodayNav() {
       var nav = document.getElementById('nav')
       if (!dailyListsChange) { 
         nav.innerHTML = ''
@@ -425,10 +457,18 @@
   
         var ptcchange = data[name].data[data[name].data.length - 1]
         var text = (name.slice(-1) === '榜') ? name.slice(0, -1): name
+
+        // [deprecated] - 2019111 'Ξ' as indicator, won't show today capture list 
+        // shtml += `<li name="${name}" >
+        //   <a href="#" onmouseover="onHoverTodayCharts(this, '${name}', true)">Ξ</a>
+        //   <a href="#" onclick="onChangeTodayCharts('${name}')">${text.toUpperCase()}</a>
+        //   (<a href="#" onmouseover="onHoverTodayCharts(this, '${name}')">${ptcchange}%</a>)
+        //   </li>`
+
         shtml += `<li name="${name}" >
-          <a href="#" onmouseover="onHoverTodayCharts(this, '${name}', true)">Ξ</a>
+          <a href="#">${indicatorOfTodayNav(captureTimeSelected, name)}</a>
           <a href="#" onclick="onChangeTodayCharts('${name}')">${text.toUpperCase()}</a>
-          (<a href="#" onmouseover="onHoverTodayCharts(this, '${name}')">%${ptcchange}</a>)
+          (<a href="#" onmouseover="onHoverTodayCharts(this, '${name}')">${ptcchange}%</a>)
           </li>`
       }
 
@@ -436,7 +476,7 @@
         var index_ptcchange = data['上证指数'].data[data['上证指数'].data.length - 1]
         shtml = `<li name="上证指数" >
         <a href="#" onclick="onChangeTodayCharts('上证指数')" >上证指数</a>
-        (<a href="#" onmouseover="onHoverTodayCharts(this, '上证指数')">%${index_ptcchange}</a>)
+        (<a href="#" onmouseover="onHoverTodayCharts(this, '上证指数')">${index_ptcchange}%</a>)
         </li>` + shtml
       }
 
@@ -633,11 +673,28 @@
 
     async function loadConfig() {
       try {
+        // load config 
         var sConfig = await localStorage.getItem(`localforage/__Walle_Stock_Bot_Config`) 
         config = JSON.parse(sConfig)
 
+        // load last 2 trade days data 
+        var last1day = moment().subtract(1, 'day').format('YYYYMMDD')
+        var last2day = moment().subtract(2, 'days').format('YYYYMMDD')
+        // 周一前两个工作日为上周周四、周五
+        if (+moment().day() === 1) {
+          last1day = moment().subtract(3, 'day').format('YYYYMMDD')
+          last2day = moment().subtract(4, 'days').format('YYYYMMDD')
+        }
+
+        var sLast1dayChanges = await localStorage.getItem(`__Walle_Stock_Daily_Trace_${last1day}`) 
+        var sLast2dayChanges = await localStorage.getItem(`__Walle_Stock_Daily_Trace_${last2day}`) 
+        if (sLast1dayChanges && sLast2dayChanges) {
+          last1dayChanges = JSON.parse(sLast1dayChanges)
+          last2dayChanges = JSON.parse(sLast2dayChanges)
+        }
+
         captureTimeSelected = config.rules[0].capture
-      } catch {
+      } catch (e) {
         // first time load config data not loaded, reload.
         setTimeout(() => location.reload(), 1000) 
       }
