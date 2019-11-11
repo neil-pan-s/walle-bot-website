@@ -70,7 +70,6 @@
 
     #nav {
       width: 80%;
-      display: none;
     }
 
     #nav a:hover {
@@ -486,6 +485,8 @@
       var nav = document.getElementById('nav')
       var nameOfIndex = '上证指数'
       var isExistIndex = false 
+
+      nav.style.display = 'none'
 
       var shtml = ''
       for (var name of names) {
