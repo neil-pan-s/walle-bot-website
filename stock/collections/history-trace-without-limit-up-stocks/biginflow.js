@@ -3,6 +3,7 @@ __Walle_Charts_Callback(
 	"name": "biginflow",
 	"profit": {
 		"max": 2947.4599999999996,
+		"normal": -166.87999999999965,
 		"strategy": 1903.1100000000008,
 		"open-crash": -708,
 		"stop-crash": -866.7099999999997,

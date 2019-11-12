@@ -3,6 +3,7 @@ __Walle_Charts_Callback(
 	"name": "inflowrate",
 	"profit": {
 		"max": 1875.7499999999993,
+		"normal": -580.2800000000002,
 		"strategy": 1125.1399999999996,
 		"open-crash": -275,
 		"stop-crash": -648.3300000000002,

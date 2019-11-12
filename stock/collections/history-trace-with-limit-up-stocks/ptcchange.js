@@ -3,6 +3,7 @@ __Walle_Charts_Callback(
 	"name": "ptcchange",
 	"profit": {
 		"max": 14330.630000000005,
+		"normal": 13591.94000000001,
 		"strategy": 13877.180000000002,
 		"open-crash": -157,
 		"stop-crash": -314.13000000000005,

@@ -188,10 +188,12 @@
 		}
 
 		window.__Walle_Charts_Callback = function (data) {
-			console.log('#Charts __Walle_Charts_Callback# ', data)
+			// console.log('#Charts __Walle_Charts_Callback# ', data)
 
-			chartsData = data
-			loadCharts(data)
+			if (data) {
+				chartsData = data
+				loadCharts(data)
+			}
 		}
 
 		function injectScript(src) { 
@@ -205,7 +207,7 @@
 			// collection mode 
 			var collectionDir = url('?collection')
 			if (collectionDir) {
-				const collectionListJs = `${collectionDir}/${ url('?name') || '资金净流入榜' }.js`
+				const collectionListJs = `${collectionDir}/${ url('?name') }.js`
 				injectScript(collectionListJs)
 			}
 		})()

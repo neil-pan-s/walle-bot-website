@@ -3,6 +3,7 @@ __Walle_Charts_Callback(
 	"name": "midinflow",
 	"profit": {
 		"max": 2944.2,
+		"normal": -786.3199999999994,
 		"strategy": 1734.2900000000009,
 		"open-crash": -1149,
 		"stop-crash": -972.4199999999997,

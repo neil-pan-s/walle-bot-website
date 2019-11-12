@@ -3,6 +3,7 @@ __Walle_Charts_Callback(
 	"name": "turn",
 	"profit": {
 		"max": 3621.2200000000007,
+		"normal": -4849.240000000002,
 		"strategy": -1200.7300000000005,
 		"open-crash": -7251,
 		"stop-crash": -516.8499999999999,
