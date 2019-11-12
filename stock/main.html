@@ -684,7 +684,7 @@
         var last2day = moment().subtract(2, 'days').format('YYYYMMDD')
         // 周一前两个工作日为上周周四、周五
         if (+moment().day() === 1) {
-          last1day = moment().subtract(3, 'day').format('YYYYMMDD')
+          last1day = moment().subtract(3, 'days').format('YYYYMMDD')
           last2day = moment().subtract(4, 'days').format('YYYYMMDD')
         }
 
