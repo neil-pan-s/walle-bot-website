@@ -484,7 +484,7 @@
       nav.innerHTML = shtml
 
       var defaultSeleted = nav.querySelector('li').getAttribute('name')
-      var isExistCurSelected = dailyNavSelected && nav.querySelector(`li[name=${dailyNavSelected}]`)
+      var isExistCurSelected = dailyNavSelected && nav.querySelector(`li[name="${dailyNavSelected}"]`)
       onChangeTodayCharts(isExistCurSelected ? dailyNavSelected : defaultSeleted)
     }
 
