@@ -420,7 +420,7 @@
     }
 
     function indicatorOfTodayNav(time, name) {
-      if (captureTimeSelected.startsWith('t0')) { return ''}
+      if (!captureTimeSelected.startsWith('t0')) { return ''}
 
       if (last1dayChanges[time] && last2dayChanges[time]) {
         if (last1dayChanges[time].changes && last2dayChanges[time].changes) {
