@@ -177,8 +177,10 @@
     var dailyNavSelected = ''
     
     // 前两个交易日数据
-    last1dayChanges = {}
-    last2dayChanges = {}
+    var last1dayChanges = {}
+    var last2dayChanges = {}
+
+    var isDev = location.host.includes('localhost') || location.host.includes('127.0.0.1')
 
     function showMask(msg) {
       mask.style.display = 'flex'
@@ -190,7 +192,7 @@
     }
 
     async function initWalleStockDevTool() {      
-      if ( location.host.includes('localhost') ) {
+      if ( isDev ) {
         // dev use , 2 mins 
         interval = window.__Walle_Stock_Interval_Capture_Start( 2 * 60 )
       } else {
@@ -229,6 +231,8 @@
       console.log('@initWalleStockDevTool@ Capture ', dailyListsCaptureMap)
       console.log('@captureTimeSelected@' , captureTimeSelected)
       console.log('@dailyNavSelected@' , dailyNavSelected)
+
+      isDev &&  hideMask()
     }
 
     function onSwitchToday() {
@@ -236,9 +240,9 @@
       iframe.src=`./charts.html?mode=today-trace`
       iframe.onload = initWalleStockData
 
-      if ( location.host.includes('localhost') ) {
+      if ( isDev ) {
         // debug use 
-        injectScript('http://localhost:8080/walle-stock.min.js',initWalleStockDevTool)
+        injectScript(`${location.origin}/walle-stock.min.js`,initWalleStockDevTool)
       } else {
         // production use 
         injectScript('../walle-stock.min.js',initWalleStockDevTool)
@@ -361,8 +365,8 @@
 
       var tbody = `<tbody>`
       for (var code of stockCodes) {
-        tbody += '<tr>'
         var stock = list[name][code]
+        tbody += `<tr>`
         for (var field in fieldKeys ) {
           tbody += `<th scope="row">${stock[field]}</th>`
         }
