@@ -191,7 +191,9 @@
       mask.style.display = 'none'
     }
 
-    async function initWalleStockDevTool() {      
+    async function initWalleStockDevTool() {    
+      if (!window.__Walle_Stock_Interval_Capture_Start) { return }
+      
       if ( isDev ) {
         // dev use , 2 mins 
         interval = window.__Walle_Stock_Interval_Capture_Start( 2 * 60 )
