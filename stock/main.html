@@ -690,6 +690,8 @@
         if (+moment().day() === 1) {
           last1day = moment().subtract(3, 'days').format('YYYYMMDD')
           last2day = moment().subtract(4, 'days').format('YYYYMMDD')
+        } else if (+moment().day() === 2) {
+          last2date = moment().subtract(4, 'days').format('YYYYMMDD')
         }
 
         var sLast1dayChanges = await localStorage.getItem(`__Walle_Stock_Daily_Trace_${last1day}`) 
