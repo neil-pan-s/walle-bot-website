@@ -259,6 +259,8 @@
         await localStorage.setItem(`__Walle_Stock_Daily_Capture_${date}`, JSON.stringify(dailyListsCaptureMap))
 
         switchDataWithCaptureTime()
+        buildTodayNav()
+        hideMask()
       })
 
       window.addEventListener('__Walle_Stock_Daily_Trace_Event', async function ({ detail }) {
@@ -387,7 +389,6 @@
       if (isTodayCaptureList) {
         if(!dailyListsCapture) { return }
 
-        // [deprecated] - 20191111 不再通过 'Ξ' 查看今日捕获的榜单, 在 'T0-xx:xx' 直接查看
         if(dailyListsCapture[name]) {
           // 今日捕获数据
           var listTable = createStocksTable(dailyListsCapture, name)
@@ -449,41 +450,35 @@
 
     async function buildTodayNav() {
       var nav = document.getElementById('nav')
-      if (!dailyListsChange) { 
+      if ((!dailyListsChange && !dailyListsCapture)) { 
         nav.innerHTML = ''
         onChangeTodayCharts()
         return 
       }
 
-      var data = dailyListsChange.changes
-      var names = Object.keys(data)
+      var lists = dailyListsChange ? dailyListsChange.changes : dailyListsCapture
+      var names = Object.keys(lists)
+      var changes = dailyListsChange ? dailyListsChange.changes : {}
 
       var shtml = ''
       for (var name of names) {
         if (name === '跌幅榜' || name === '上证指数') { continue }
   
-        var ptcchange = data[name].data[data[name].data.length - 1]
+        var ptcchange = changes[name] ? changes[name].data.slice(-1) : '0.00'
         var text = (name.slice(-1) === '榜') ? name.slice(0, -1): name
-
-        // [deprecated] - 2019111 'Ξ' as indicator, won't show today capture list 
-        // shtml += `<li name="${name}" >
-        //   <a href="#" onmouseover="onHoverTodayCharts(this, '${name}', true)">Ξ</a>
-        //   <a href="#" onclick="onChangeTodayCharts('${name}')">${text.toUpperCase()}</a>
-        //   (<a href="#" onmouseover="onHoverTodayCharts(this, '${name}')">${ptcchange}%</a>)
-        //   </li>`
 
         shtml += `<li name="${name}" >
           <a href="#">${indicatorOfTodayNav(captureTimeSelected, name)}</a>
           <a href="#" onclick="onChangeTodayCharts('${name}')">${text.toUpperCase()}</a>
-          (<a href="#" onmouseover="onHoverTodayCharts(this, '${name}')">${ptcchange}%</a>)
+          (<a href="#" onmouseover="onHoverTodayCharts(this, '${name}', ${!dailyListsChange})">${ptcchange}%</a>)
           </li>`
       }
 
-      if (data['上证指数']) {
-        var index_ptcchange = data['上证指数'].data[data['上证指数'].data.length - 1]
+      if (lists['上证指数']) {
+        var index_ptcchange = changes[name] ? changes['上证指数'].data.slice(-1) : '0.00'
         shtml = `<li name="上证指数" >
         <a href="#" onclick="onChangeTodayCharts('上证指数')" >上证指数</a>
-        (<a href="#" onmouseover="onHoverTodayCharts(this, '上证指数')">${index_ptcchange}%</a>)
+        (<a href="#" onmouseover="onHoverTodayCharts(this, '上证指数', ${!dailyListsChange})">${index_ptcchange}%</a>)
         </li>` + shtml
       }
 
@@ -675,7 +670,13 @@
     }
 
     function switchDataWithCaptureTime() {
-      dailyListsCapture = dailyListsCaptureMap[captureTimeSelected]
+      if (captureTimeSelected.startsWith('t0')) {
+        // remove 't0-'
+        dailyListsCapture = dailyListsCaptureMap[captureTimeSelected.slice(3)]
+      } else {
+        dailyListsCapture = undefined
+      }
+
       dailyListsChange = dailyListsChangeMap[captureTimeSelected]
     }
 
