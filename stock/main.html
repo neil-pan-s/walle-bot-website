@@ -715,10 +715,9 @@
 
         var sLast1dayChanges = await localStorage.getItem(`__Walle_Stock_Daily_Trace_${last1day}`) 
         var sLast2dayChanges = await localStorage.getItem(`__Walle_Stock_Daily_Trace_${last2day}`) 
-        if (sLast1dayChanges && sLast2dayChanges) {
-          last1dayChanges = JSON.parse(sLast1dayChanges)
-          last2dayChanges = JSON.parse(sLast2dayChanges)
-        }
+      
+        sLast1dayChanges && (last1dayChanges = JSON.parse(sLast1dayChanges));
+        sLast2dayChanges && (last2dayChanges = JSON.parse(sLast2dayChanges));
       } catch (e) {
         // first time load config data not loaded, reload.
         setTimeout(() => location.reload(), 1000) 
