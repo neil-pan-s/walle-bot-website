@@ -271,14 +271,7 @@
         var captureTime = detail.time
         // every day reset dailyListsChange
         if (dailyListsChangeMap.date !== date) {
-          dailyListsChangeMap = {
-            date, 
-            [captureTime]: {
-              changes: {},
-              newlists: {},
-              oldlists: {},
-            }
-          }
+          dailyListsChangeMap = { date }
         }
 
         if (!dailyListsChangeMap[captureTime]) {
@@ -357,6 +350,7 @@
       if (!list[name]) { return }
 
       var stockCodes = Object.keys(list[name])
+      if (!stockCodes.length) { return }
 
       var table = '<table class="table">'
 
@@ -392,7 +386,9 @@
         if(dailyListsCapture[name]) {
           // 今日捕获数据
           var listTable = createStocksTable(dailyListsCapture, name)
-          title = `捕获${listTable}<br/>`    
+          if (listTable) {
+            title = `捕获${listTable}`
+          }
         }    
       } else {
         if (!dailyListsChange) { return }
@@ -401,27 +397,31 @@
         var newListTable = createStocksTable(dailyListsChange.newlists, name)
         var oldListTable = createStocksTable(dailyListsChange.oldlists, name)
 
-        if (captureTimeSelected && captureTimeSelected.startsWith('t0')) {
-          title = `跟踪${newListTable}<br/>捕获${oldListTable}`        
+        if (captureTimeSelected && captureTimeSelected.startsWith('t0')) {          
+          newListTable && (title += `跟踪${newListTable}`)
+          oldListTable && (title += `<br/>捕获${oldListTable}`)
         } else {
-          title = `今日${newListTable}<br/>昨日${oldListTable}`        
+          newListTable && (title += `今日${newListTable}`)
+          oldListTable && (title += `<br/>昨日${oldListTable}`)
         }
       }
 
-      toolTip && toolTip.dispose()
-      toolTip = new Tooltip(el, {
-        title,
-        html: true,
-        delay: { show: 1000, hide: 300 },
-        popperOptions: {
-          placement: 'bottom',
-          modifiers: {
-            preventOverflow: {
-              boundariesElement: document.querySelector('body'),
+      if (title) {
+        toolTip && toolTip.dispose()
+        toolTip = new Tooltip(el, {
+          title,
+          html: true,
+          delay: { show: 1000, hide: 300 },
+          popperOptions: {
+            placement: 'bottom',
+            modifiers: {
+              preventOverflow: {
+                boundariesElement: document.querySelector('body'),
+              },
             },
           },
-        },
-      });
+        });
+      }
 
       return false
     }
@@ -637,7 +637,7 @@
 
     async function initTimesNav() {
       var nav = document.getElementById('types')
-      const rules = [].concat(config.rules, config.intervals)
+      const rules = [].concat(config.rules || [], config.intervals || [])
 
       var sHtml = ''
       var sT0Html = ''
@@ -703,8 +703,6 @@
           last1dayChanges = JSON.parse(sLast1dayChanges)
           last2dayChanges = JSON.parse(sLast2dayChanges)
         }
-
-        captureTimeSelected = config.rules[0].capture
       } catch (e) {
         // first time load config data not loaded, reload.
         setTimeout(() => location.reload(), 1000) 
