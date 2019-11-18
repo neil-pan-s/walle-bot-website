@@ -327,8 +327,24 @@
       var el = document.querySelector(`#nav li[name="${name}"]`)
       el && el.setAttribute('class', 'selected')
 
-      console.log('#call __Walle_Charts_Callback# ', dailyNavSelected, dailyListsChange.changes[dailyNavSelected])
-      iframe.contentWindow.window.__Walle_Charts_Callback(dailyListsChange.changes[dailyNavSelected])
+      var chartsData = dailyListsChange.changes[dailyNavSelected]
+      if (!captureTimeSelected.startsWith('t0')) { 
+        // 合并展示两日追踪数据 以便数据分析 
+        // 即 2019-11-19日 09:40 图表数据包括: 2019-11-18 T0-09:40 + 2019-11-19 09:40
+        var captureTime = 't0-' + captureTimeSelected
+        if ( last1dayChanges[captureTime] && last1dayChanges[captureTime].changes) {
+          var last1dayChangesData = last1dayChanges[captureTime].changes[dailyNavSelected]
+          var todayChangesData = dailyListsChange.changes[dailyNavSelected]
+
+          var time = [].concat(last1dayChangesData.time || [], todayChangesData.time || [])
+          var data = [].concat(last1dayChangesData.data || [], todayChangesData.data || [])
+          
+          chartsData = { time, data }
+        }
+      }
+
+      console.log('#call __Walle_Charts_Callback# ', captureTimeSelected, dailyNavSelected, chartsData)
+      iframe.contentWindow.window.__Walle_Charts_Callback(chartsData)
     }
 
     function createStocksTable(list, name) {
