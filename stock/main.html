@@ -413,6 +413,11 @@
         var newListTable = createStocksTable(dailyListsChange.newlists, name)
         var oldListTable = createStocksTable(dailyListsChange.oldlists, name)
 
+        // T0 当日追踪榜单 从Capture数据显示 以便Interval榜单可以实时显示捕获数据
+        if (captureTimeSelected.startsWith('t0') && dailyListsCapture) { 
+          newListTable = createStocksTable(dailyListsCapture, name)
+        }
+        
         if (captureTimeSelected && captureTimeSelected.startsWith('t0')) {          
           newListTable && (title += `跟踪${newListTable}`)
           oldListTable && (title += `<br/>捕获${oldListTable}`)
