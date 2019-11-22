@@ -379,7 +379,15 @@
         var stock = list[name][code]
         tbody += `<tr>`
         for (var field in fieldKeys ) {
-          tbody += `<th scope="row">${stock[field]}</th>`
+          var value = stock[field]
+          if (['lrzj', 'lczj', 'je'].includes(field)) {
+            if (+value >= 100000000) {
+              value = (+value/100000000).toFixed(2) + '亿'
+            } else {
+              value = (+value/10000).toFixed(2) + '万'
+            } 
+          }
+          tbody += `<th scope="row">${value}</th>`
         }
         tbody += '</tr>'
       }  
