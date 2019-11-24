@@ -5,6 +5,7 @@ __Walle_Charts_Callback(
 		"max": 3.7300000000000004,
 		"normal": -0.6300000000000001,
 		"strategy": 2.0100000000000002,
+		"compound-interest": 2.0100335998500807,
 		"open-crash": 0,
 		"stop-crash": 0,
 		"reverse-crash": 0

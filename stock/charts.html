@@ -14,6 +14,18 @@
 
 	<script src="./lib/url.js"></script>
 	<style>
+	* {
+		padding: 0;
+		margin: 0;
+	}	
+
+	#title {
+		text-align: center;
+		font-size: 15px;
+		cursor: pointer;
+		display: none;
+	}
+
 	canvas{
 		-moz-user-select: none;
 		-webkit-user-select: none;
@@ -24,6 +36,7 @@
 
 <body>
 	<div style="width:90%; margin:auto;">
+		<div id="title">Walle Trace Chart</div>
 		<canvas id="canvas"></canvas>
 	</div>
 	<br>
@@ -133,7 +146,7 @@
 					responsive: true,
 					title: {
 						display: true,
-						text: `Walle Trace Chart`
+						// text: `Walle Trace Chart`
 					},
 					tooltips: {
 						mode: 'index',
@@ -187,12 +200,28 @@
 			chartsInstance = new Chart(ctx, config)
 		}
 
+		function createTitleInfo(data) {
+			var title = document.querySelector('#title')
+			var info = {
+				name: data.name,
+				profit: data.profit,
+				day: data.day
+			}
+
+			if (data.name) {
+				title.style.display = 'block'
+				title.setAttribute('title', JSON.stringify(info, null, 4))
+			}
+		}
+
 		window.__Walle_Charts_Callback = function (data) {
 			// console.log('#Charts __Walle_Charts_Callback# ', data)
 
-			if (data) {
+			if (data) {				
 				chartsData = data
+
 				loadCharts(data)
+				createTitleInfo(data)
 			}
 		}
 
