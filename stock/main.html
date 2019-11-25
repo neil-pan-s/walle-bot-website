@@ -460,11 +460,14 @@
             const last1dayChange = +last1dayChanges[time].changes[name].data.slice(-1)
             const last2dayChange = +last2dayChanges[time].changes[name].data.slice(-1)
 
+            const last1date = last1dayChanges.date
+            const last2date = last2dayChanges.date
+
             // 连续两日榜单追踪为下跌则标记为不买入
             if (last1dayChange < 0 && last2dayChange < 0) {
-              return `<i title="前两交易日跟踪收益: ${last1dayChange}%,${last2dayChange}%">✘</i>`
+              return `<i title="前两交易日跟踪收益 \r\n${last2date} : ${last2dayChange}%, ${last1date} : ${last1dayChange}%">✘</i>`
             } else {
-              return `<i title="前两交易日跟踪收益: ${last1dayChange}%,${last2dayChange}%">✔</i>`
+              return `<i title="前两交易日跟踪收益 \r\n${last2date} : ${last2dayChange}%, ${last1date} : ${last1dayChange}%">✔</i>`
             }
           }
         }
