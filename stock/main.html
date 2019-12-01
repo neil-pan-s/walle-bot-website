@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta http-equiv="X-UA-Compatible" content="ie=edge">
   <title>::: Walle Stocks Center :::</title>
+  <script src="./lib/handlebars.min.js"></script>
   <script src="./lib/url.js"></script>
   <script src="./lib/moment.min.js"></script>
   <script src="./lib/popper.min.js"></script>
@@ -28,7 +29,7 @@
 
     iframe {
       width: 90%;
-      height: 90%;
+      height: 630px;
       margin: auto;
       display: block;
     }
@@ -93,6 +94,52 @@
       height: 100%;
     }
 
+    #gene {
+      display: none;
+      width: 80%;
+      margin: auto;
+      margin-bottom: 50px;
+      text-transform: uppercase;
+    }
+
+    #gene .title {
+      padding: 20px 10px 10px;
+      margin-bottom: 30px;
+      border-bottom: #000 dotted 1px;
+    }
+
+    #gene .title .close {
+      float: right;
+    }
+
+    #gene .title .close:after {
+      content: "";
+      clear: both;
+      display: block;
+    }
+
+    #gene .data {
+      display: flex;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      padding: 10px;
+    }
+
+    #gene .data .section{
+      width: 350px;
+    }
+
+    #gene .data ul {
+      /* padding: 20px 0px; */
+      text-align: left;
+      width: 100%;
+    }
+
+    #gene .data li {
+      display: block;
+      text-align: left;
+    }
+
     .tooltip {
       background: #FFC107;
       color: #fff;
@@ -122,22 +169,91 @@
       padding-top: 5px;
     }
 
+    .cursor-pointer {
+      cursor: pointer;
+    }
+
+    .cursor-default {
+      cursor: default;
+    }
+
+    .cursor-wait {
+      cursor: wait;
+    }
+
+    .cursor-light {
+      opacity: 0.5;
+    }
+
   </style>
 </head>
 <body>
-
   <div id="mask"> Walle Stock Market </div>
-
   <ul id="switch">
     <li id="today-trace"  class="selected"><a href="?mode=today-trace">今日数据</a></li>
     <li id="daily-trace"><a href="?mode=daily-trace">近期跟踪</a></li>
     <li id="history-trace"><a href="?mode=history-trace">历史数据</a></li>
   </ul>
-  
   <ul id="types"></ul>
-
   <ul id="nav"></ul>
   <iframe id="charts" src="" frameborder="0" scrolling="no"></iframe>
+  <div id="gene" name="gene"></div>
+
+  <script id="gene-template" type="text/x-handlebars-template">
+    <p class="title"> 股票基因 - <a href="http://data.eastmoney.com/zjlx/{{code}}.html" target="_blank"> {{name}} ({{code}}) </a> <i class="cursor-pointer close" onclick="hideGene()">x</i></p>
+    <div class="data" >
+      {{#each gene}}
+        <div class="section">
+          <span class="name">{{@key}}</span>
+          <ul>
+            {{#each this}}
+              <li>{{@key}}: {{this}}</li>
+            {{/each}}
+          </ul> 
+        </div> 
+      {{/each}} 
+
+      <!-- Flex 填充三个0高度的项目 以保证最后一行左对齐填充 -->
+      <div class="section"></div>
+      <div class="section"></div>
+      <div class="section"></div>
+    </div>
+  </script>
+
+  <script>
+    var geneTimeoutId = -1
+
+    function compile(templateSelector, destSelector, data) {
+      var templateEl = document.querySelector(templateSelector)
+      var destEl = document.querySelector(destSelector)
+      var template = Handlebars.compile(templateEl.innerHTML);
+      destEl.innerHTML = template(data)
+    }
+
+    async function showGene(code) {
+      var gene = await window.__Walle_Stock_Pool.gene(code)
+      compile('#gene-template', '#gene',gene)
+      document.querySelector('#gene').style.display = 'block'
+
+      // 自动滚动到基因数据
+      const top = document.querySelector('#gene').offsetTop
+      window.scrollTo(0, top)
+      
+      // 自动收起隐藏
+      clearTimeout(geneTimeoutId)
+      geneTimeoutId = setTimeout(hideGene, 20*60*1000)
+    }
+
+    function hideGene() {
+      clearTimeout(geneTimeoutId)
+      window.scrollTo(0, 0)
+      document.querySelector('#gene').style.display = 'none'
+    }
+
+    // dev use 
+    // setTimeout(() => showGene('600519'), 3000)
+    // setTimeout(() => showGene('603489'), 3000)
+  </script>
 
   <script>
     var mode = url('?mode') || 'today-trace'
@@ -163,6 +279,11 @@
       // [09:40]: { ...dailyListsCapture },
       // [14:40]: { ...dailyListsCapture },
     }
+    var dailyListsRecentMap = {
+      // [1w-09:40]: { ...dailyListsRecent },
+      // [1w-14:40]: { ...dailyListsRecent },
+    }
+    var dailyListsRecentNames = []
 
     var mask = document.getElementById('mask')
     var iframe = document.getElementById('charts')
@@ -203,19 +324,19 @@
     async function initWalleStockData() {
       var date = moment().format('YYYYMMDD')
       
-      // 保留前一周数据 用于复盘分析
+      // 保留前一周交易日数据 用于复盘分析
       // var lastdate = moment().subtract(1, 'day').format('YYYYMMDD')
-      var lastdate = moment().subtract(7, 'days').format('YYYYMMDD')
+      var lastdate = moment().subtract(10, 'days').format('YYYYMMDD')
 
-      localStorage.removeItem(`__Walle_Stock_Daily_Trace_${lastdate}`)
-      localStorage.removeItem(`__Walle_Stock_Daily_Capture_${lastdate}`)
+      localStorage.removeItem(`localforage/__Walle_Stock_Daily_Trace_${lastdate}`)
+      localStorage.removeItem(`localforage/__Walle_Stock_Daily_Capture_${lastdate}`)
 
-      var sdailyListsChange = await localStorage.getItem(`__Walle_Stock_Daily_Trace_${date}`) 
+      var sdailyListsChange = await localStorage.getItem(`localforage/__Walle_Stock_Daily_Trace_${date}`) 
       if (sdailyListsChange) {
         dailyListsChangeMap = JSON.parse(sdailyListsChange)
       }
 
-      var sTodayCaptureLists = await localStorage.getItem(`__Walle_Stock_Daily_Capture_${date}`) 
+      var sTodayCaptureLists = await localStorage.getItem(`localforage/__Walle_Stock_Daily_Capture_${date}`) 
       if (sTodayCaptureLists) {
         dailyListsCaptureMap = JSON.parse(sTodayCaptureLists)
       }
@@ -253,7 +374,7 @@
 
         var captureTime = detail.time
         dailyListsCaptureMap[captureTime] = detail.lists 
-        await localStorage.setItem(`__Walle_Stock_Daily_Capture_${date}`, JSON.stringify(dailyListsCaptureMap))
+        await localStorage.setItem(`localforage/__Walle_Stock_Daily_Capture_${date}`, JSON.stringify(dailyListsCaptureMap))
 
         switchDataWithCaptureTime()
         buildTodayNav()
@@ -299,7 +420,7 @@
         dailyListsChangeMap[captureTime].oldlists = detail.oldlists
 
         console.log(`#__Walle_Stock_Daily_Trace_${date}# `, dailyListsChangeMap)
-        await localStorage.setItem(`__Walle_Stock_Daily_Trace_${date}`, JSON.stringify(dailyListsChangeMap))
+        await localStorage.setItem(`localforage/__Walle_Stock_Daily_Trace_${date}`, JSON.stringify(dailyListsChangeMap))
 
         switchDataWithCaptureTime()
         buildTodayNav()
@@ -344,20 +465,40 @@
       iframe.contentWindow.window.__Walle_Charts_Callback(chartsData)
     }
 
-    function createStocksTable(list, name) {
+    function onClickIgnoreStock(el, list_name, code, name) {
+      if(!captureTimeSelected.startsWith('t0')) { return }
+
+      const isIgnore = window.confirm(`Ignore Stock ${code} ${name}?`)
+      if (isIgnore) {
+        // remove 't0-'
+        const time = captureTimeSelected.slice(3)
+        console.log(`#__Walle_Stock_Controller# ignore `, time, list_name, code, name)
+        window.__Walle_Stock_Controller.ignore(time, list_name, code)
+
+        // 清空当日追踪榜单数据中的对应股票 保留捕获榜单中的数据
+        delete dailyListsChange.newlists[list_name][code]
+
+        // 清空此股票 tr 行
+        el.parentNode.parentNode.innerHTML = ''
+      }
+    }
+
+    function createStocksTable(list, name, isCaptureList = false) {
       var translator = {
         code: '股票代码',
         name: '股票简称',
         price: '股价',
-        zdf: '涨跌幅',
+        change: '涨跌幅',
         rate: '主力净占比',
-        kpj: '开盘价',
-        hsl: '换手率',
-        cjl: '成交量',
-        lrzj: '主力流入资金',
-        lczj: '主力流出资金',
-        je: '主力净流入资金',
-        ddlr: '主力大单流入',
+        open: '开盘价',
+        turnover: '换手率',
+        qrr: '量比',
+        volume: '成交量',
+        inflow: '主力流入资金',
+        outflow: '主力流出资金',
+        netinflow: '主力净流入资金',
+        // 非固定属性
+        hot: '热度',
       }
 
       if (!list[name]) { return }
@@ -365,11 +506,10 @@
       var stockCodes = Object.keys(list[name])
       if (!stockCodes.length) { return }
 
-      var table = '<table class="table">'
-
+      var testStock = list[name][stockCodes[0]]
       var thead = `<thead><tr>`
-      var fieldKeys = list[name][stockCodes[0]]
-      for (var key in fieldKeys) {
+      for (var key in translator) {
+        if (key === 'hot' && !testStock.hot) { continue }
         thead += `<th scope="col">${translator[key]}</th>`
       }
       thead += '</tr></thead>'
@@ -378,27 +518,46 @@
       for (var code of stockCodes) {
         var stock = list[name][code]
         tbody += `<tr>`
-        for (var field in fieldKeys ) {
+        for (var field in translator ) {
+          if (field === 'hot' && !testStock.hot) { continue }
+
           var value = stock[field]
-          if (['lrzj', 'lczj', 'je'].includes(field)) {
-            if (+value >= 100000000) {
+          if (['inflow', 'outflow', 'netinflow'].includes(field)) {
+            if (Math.abs(+value) >= 100000000) {
               value = (+value/100000000).toFixed(2) + '亿'
             } else {
               value = (+value/10000).toFixed(2) + '万'
             } 
           }
-          tbody += `<th scope="row">${value}</th>`
+
+          if (!name.includes('上证指数') && (field === 'code')) {
+            if (!isCaptureList) {
+              if (captureTimeSelected.startsWith('t0')) {
+                // 仅可忽略今日捕获的榜单股票
+                var x = `<i class="cursor-pointer" title="从榜单中移除此股票" onclick="onClickIgnoreStock(this, '${name}' , '${stock.code}', '${stock.name}')">x</i>`
+                tbody += `<th scope="row" class="cursor-default">${value} (${x})</th>`
+                continue
+              }
+            } else {
+              var i = `<i class="cursor-pointer" title="查看股票基因数据" onclick="showGene('${stock.code}')">(i)</i>`
+              tbody += `<th scope="row" class="cursor-default">${value} ${i}</th>`
+              continue
+            }
+          }
+
+          tbody += `<th scope="row" class="cursor-default" >${value}</th>`
         }
+
         tbody += '</tr>'
       }  
       tbody += `</tbody>`
 
-      table += thead + tbody + '</table>'
+      table = '<table class="table">' + thead + tbody + '</table>'
 
       return table
     }
 
-    async function onHoverTodayCharts(el, name, isTodayCaptureList = false) {
+    async function onShowTodayCharts(el, name, isTodayCaptureList = false) {
       var title = ''
 
       if (isTodayCaptureList) {
@@ -406,7 +565,7 @@
 
         if(dailyListsCapture[name]) {
           // 今日捕获数据
-          var listTable = createStocksTable(dailyListsCapture, name)
+          var listTable = createStocksTable(dailyListsCapture, name, true)
           if (listTable) {
             title = `捕获${listTable}`
           }
@@ -415,11 +574,11 @@
         if (!dailyListsChange) { return }
 
         var newListTable = createStocksTable(dailyListsChange.newlists, name)
-        var oldListTable = createStocksTable(dailyListsChange.oldlists, name)
+        var oldListTable = createStocksTable(dailyListsChange.oldlists, name, true)
 
         // T0 当日追踪榜单 从Capture数据显示 以便Interval榜单可以实时显示捕获数据
         if (captureTimeSelected.startsWith('t0') && dailyListsCapture) { 
-          oldListTable = createStocksTable(dailyListsCapture, name)
+          oldListTable = createStocksTable(dailyListsCapture, name, true)
         }
         
         if (captureTimeSelected && captureTimeSelected.startsWith('t0')) {          
@@ -436,7 +595,13 @@
         toolTip = new Tooltip(el, {
           title,
           html: true,
-          delay: { show: 1000, hide: 300 },
+          trigger: "click",
+          closeOnClickOutside: true,
+
+          // hover related
+          // trigger: "hover",
+          // delay: { show: 1000, hide: 300 },
+
           popperOptions: {
             placement: 'bottom',
             modifiers: {
@@ -496,17 +661,17 @@
         var text = (name.slice(-1) === '榜') ? name.slice(0, -1): name
 
         shtml += `<li name="${name}" >
-          <a href="#">${indicatorOfTodayNav(captureTimeSelected, name)}</a>
-          <a href="#" onclick="onChangeTodayCharts('${name}')">${text.toUpperCase()}</a>
-          (<a href="#" onmouseover="onHoverTodayCharts(this, '${name}', ${!dailyListsChange})">${ptcchange}%</a>)
+          <a>${indicatorOfTodayNav(captureTimeSelected, name)}</a>
+          <a onclick="onChangeTodayCharts('${name}')">${text.toUpperCase()}</a>
+          (<a onmouseover="onShowTodayCharts(this, '${name}', ${!dailyListsChange})">${ptcchange}%</a>)
           </li>`
       }
 
       if (lists['上证指数']) {
         var index_ptcchange = changes[name] ? changes['上证指数'].data.slice(-1) : '0.00'
         shtml = `<li name="上证指数" >
-        <a href="#" onclick="onChangeTodayCharts('上证指数')" >上证指数</a>
-        (<a href="#" onmouseover="onHoverTodayCharts(this, '上证指数', ${!dailyListsChange})">${index_ptcchange}%</a>)
+        <a onclick="onChangeTodayCharts('上证指数')" >上证指数</a>
+        (<a onmouseover="onShowTodayCharts(this, '上证指数', ${!dailyListsChange})">${index_ptcchange}%</a>)
         </li>` + shtml
       }
 
@@ -540,10 +705,19 @@
         return 
       }
 
-      await new Promise((resolve) => {
-        iframe.src=`./charts.html?name=${list_name}&collection=${collections[mode]}`
-        iframe.onload = resolve
-      }) 
+      if (captureTimeSelected.includes('w1')) {        
+        iframe.src=`./charts.html`
+        iframe.onload = () => {
+          iframe.contentWindow.window.__Walle_Charts_Callback(dailyListsRecentMap[captureTimeSelected][list_name])
+        }
+      } else {
+        if (!list_name.includes('w1')) {
+          await new Promise((resolve) => {
+            iframe.src=`./charts.html?name=${list_name}&collection=${collections[mode]}`
+            iframe.onload = resolve
+          }) 
+        }
+      }
 
       var nav = document.getElementById('nav')
       
@@ -599,8 +773,9 @@
 
       for(var li of lis) {
         var name = li.getAttribute('name')
-        var time = captureTimeSelected.replace(':','')
-        if (name.includes(time)) {
+        var time1 = captureTimeSelected.replace(':','')
+        var time2 = name.split('@')[0]
+        if (time1 === time2) {
           li.style.display = 'inline-block'
           
           // 0940@上证指数 => 上证指数
@@ -623,10 +798,13 @@
     
     window.__Walle_Stocks_Callback = async function (data) {
       var names = data.names.split(',')
-      await buildDailyOrHistoryNav(names)
 
       if (mode === 'daily-trace') {
+        names = names.concat(dailyListsRecentNames)
+        await buildDailyOrHistoryNav(names)
         await buildDailyNav()
+      } else {
+        await buildDailyOrHistoryNav(names)
       }
     }
 
@@ -671,13 +849,17 @@
 
       var sHtml = ''
       var sT0Html = ''
+      var sW1Html = ''
       for(var rule of rules) {
         sHtml += `<li onclick="onChangeTimesNav(this)">${rule.capture.toUpperCase()}</li>`
         sT0Html += `<li onclick="onChangeTimesNav(this)">T0-${rule.capture.toUpperCase()}</li>`
+        sW1Html += `<li onclick="onChangeTimesNav(this)">W1-${rule.capture.toUpperCase()}</li>`
       }
 
       if (mode === 'today-trace') {
         nav.innerHTML = sHtml + sT0Html
+      } else if (mode === 'daily-trace') {
+        nav.innerHTML = sHtml + sW1Html
       } else {
         nav.innerHTML = sHtml
       }
@@ -712,6 +894,64 @@
       dailyListsChange = dailyListsChangeMap[captureTimeSelected]
     }
 
+    async function loadRecentRecord() {
+      const rules = [].concat(config.rules || [], config.intervals || [])
+      
+      // recent 1 week record
+      for (let i = 1; i <= 10; i++) {
+        var date = moment().subtract(i, 'days').format('YYYYMMDD')
+        var day = moment().subtract(i, 'days').day()
+        var key = `localforage/__Walle_Stock_Daily_Trace_${date}`
+
+        // 跳过周末
+        if ([6, 0].includes(day)) {
+          continue
+        }
+        
+        var sDailyTraceChanges = await localStorage.getItem(key) 
+        if (!sDailyTraceChanges) {
+          continue
+        }
+
+        var dailyTraceChanges = JSON.parse(sDailyTraceChanges)
+        for(var rule of rules) {
+          var captureTime = rule.capture
+          if (!dailyTraceChanges[captureTime]) {
+            continue
+          }
+
+          var dailyChanges = dailyTraceChanges[captureTime].changes
+
+          for(var name in dailyChanges) {
+            var listChanges = dailyChanges[name]
+
+            var name = `w1-${captureTime}@${name}`.replace(':','')
+            if (!dailyListsRecentNames.includes(name)) {
+              dailyListsRecentNames.push(name)
+            }
+
+            var time = 'w1-' + captureTime
+            if (!dailyListsRecentMap[time]) {
+              dailyListsRecentMap[time] = {}
+            }
+            if (!dailyListsRecentMap[time][name]) {
+              dailyListsRecentMap[time][name] = {
+                'daily-close-ptcchange': [],
+                'daily-open-ptcchange': [],
+              }
+            }
+            var recentChanges = dailyListsRecentMap[time][name]
+
+            var open = listChanges.data.shift()
+            var close = listChanges.data.pop()
+
+            recentChanges['daily-close-ptcchange'].unshift(+date, +close)
+            recentChanges['daily-open-ptcchange'].unshift(+date, +open) 
+          }
+        }
+      }
+    }
+
     async function loadConfig() {
       try {
         // load config 
@@ -729,8 +969,8 @@
           last2date = moment().subtract(4, 'days').format('YYYYMMDD')
         }
 
-        var sLast1dayChanges = await localStorage.getItem(`__Walle_Stock_Daily_Trace_${last1day}`) 
-        var sLast2dayChanges = await localStorage.getItem(`__Walle_Stock_Daily_Trace_${last2day}`) 
+        var sLast1dayChanges = await localStorage.getItem(`localforage/__Walle_Stock_Daily_Trace_${last1day}`) 
+        var sLast2dayChanges = await localStorage.getItem(`localforage/__Walle_Stock_Daily_Trace_${last2day}`) 
       
         sLast1dayChanges && (last1dayChanges = JSON.parse(sLast1dayChanges));
         sLast2dayChanges && (last2dayChanges = JSON.parse(sLast2dayChanges));
@@ -742,6 +982,10 @@
 
     window.onload = async function() {
       await loadConfig()
+
+      if (mode === 'daily-trace') {
+        await loadRecentRecord()
+      }
 
       if (['daily-trace', 'today-trace'].includes(mode)) {
         initTimesNav()
