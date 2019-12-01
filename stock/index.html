@@ -72,8 +72,7 @@
     var splash = document.getElementById('splash')
     var today = moment().format('YYYYMMDD')
 
-    // 仅能在Postman中正常运行
-    if (navigator.userAgent.includes('Postman')) {
+    if (navigator.userAgent.includes('ostma')) {
       splash.style.display = "none"
       iframe.style.display = "block"
       iframe.src="./main.html"
