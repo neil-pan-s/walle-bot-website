@@ -3,21 +3,21 @@ __Walle_Charts_Callback(
 	"name": "1430@跌幅榜",
 	"profit": {
 		"max": 0,
-		"normal": -353.59,
+		"normal": -538.6999999999999,
 		"strategy": -10,
 		"compound-interest": -10.000000000000009,
-		"open-crash": -298.97999999999996,
-		"stop-crash": -45.849999999999994,
+		"open-crash": -477.4,
+		"stop-crash": -53.959999999999994,
 		"reverse-crash": 0
 	},
 	"day": {
-		"total": 14,
+		"total": 21,
 		"trade": 1,
-		"rest": 13,
+		"rest": 20,
 		"up": 0,
-		"down": 14,
-		"open-crash": 9,
-		"stop-crash": 3,
+		"down": 21,
+		"open-crash": 15,
+		"stop-crash": 4,
 		"reverse-crash": 0
 	},
 	"daily-open-profit": [
