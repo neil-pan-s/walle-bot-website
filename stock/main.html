@@ -27,6 +27,11 @@
       font-weight: 400;
     }
 
+    i {
+      font-style: normal;
+      letter-spacing: 2px;
+    }
+
     iframe {
       width: 90%;
       height: 630px;
@@ -534,8 +539,8 @@
             if (!isCaptureList) {
               if (captureTimeSelected.startsWith('t0')) {
                 // 仅可忽略今日捕获的榜单股票
-                var x = `<i class="cursor-pointer" title="从榜单中移除此股票" onclick="onClickIgnoreStock(this, '${name}' , '${stock.code}', '${stock.name}')">x</i>`
-                tbody += `<th scope="row" class="cursor-default">${value} (${x})</th>`
+                var x = `<i class="cursor-pointer" title="从榜单中移除此股票" onclick="onClickIgnoreStock(this, '${name}' , '${stock.code}', '${stock.name}')">(x)</i>`
+                tbody += `<th scope="row" class="cursor-default">${value} ${x}</th>`
                 continue
               }
             } else {
