@@ -901,7 +901,6 @@
 
     async function loadRecentRecord() {
       const rules = [].concat(config.captures || [], config.intervals || [])
-      var closeProfit = 0, openProfit = 0
 
       // recent 1 week record
       for (let i = 1; i <= 10; i++) {
@@ -949,8 +948,10 @@
             }
             var recentChanges = dailyListsRecentMap[time][name]
 
-            var open = listChanges.data.shift()
-            var close = listChanges.data.pop()
+            var open = listChanges.data.shift() || 0
+            var close = listChanges.data.pop() || 0
+            var closeProfit = recentChanges['daily-close-profit'][1] || 0
+            var openProfit = recentChanges['daily-open-profit'][1] || 0
 
             closeProfit += +close
             openProfit += +open
