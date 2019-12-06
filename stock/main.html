@@ -901,7 +901,8 @@
 
     async function loadRecentRecord() {
       const rules = [].concat(config.captures || [], config.intervals || [])
-      
+      var closeProfit = 0, openProfit = 0
+
       // recent 1 week record
       for (let i = 1; i <= 10; i++) {
         var date = moment().subtract(i, 'days').format('YYYYMMDD')
@@ -926,7 +927,6 @@
           }
 
           var dailyChanges = dailyTraceChanges[captureTime].changes
-
           for(var name in dailyChanges) {
             var listChanges = dailyChanges[name]
 
@@ -942,7 +942,9 @@
             if (!dailyListsRecentMap[time][name]) {
               dailyListsRecentMap[time][name] = {
                 'daily-close-ptcchange': [],
+                'daily-close-profit': [],
                 'daily-open-ptcchange': [],
+                'daily-open-profit': [],	
               }
             }
             var recentChanges = dailyListsRecentMap[time][name]
@@ -950,6 +952,11 @@
             var open = listChanges.data.shift()
             var close = listChanges.data.pop()
 
+            closeProfit += +close
+            openProfit += +open
+
+            recentChanges['daily-close-profit'].unshift(+date, +closeProfit)
+            recentChanges['daily-open-profit'].unshift(+date, +openProfit)
             recentChanges['daily-close-ptcchange'].unshift(+date, +close)
             recentChanges['daily-open-ptcchange'].unshift(+date, +open) 
           }
