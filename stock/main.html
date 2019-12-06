@@ -903,7 +903,7 @@
       const rules = [].concat(config.captures || [], config.intervals || [])
 
       // recent 1 week record
-      for (let i = 1; i <= 10; i++) {
+      for (let i = 10; i > 0; i--) {
         var date = moment().subtract(i, 'days').format('YYYYMMDD')
         var day = moment().subtract(i, 'days').day()
         var key = `localforage/__Walle_Stock_Daily_Trace_${date}`
@@ -956,10 +956,10 @@
             closeProfit += +close
             openProfit += +open
 
-            recentChanges['daily-close-profit'].unshift(+date, +closeProfit)
-            recentChanges['daily-open-profit'].unshift(+date, +openProfit)
-            recentChanges['daily-close-ptcchange'].unshift(+date, +close)
-            recentChanges['daily-open-ptcchange'].unshift(+date, +open) 
+            recentChanges['daily-close-profit'].push(+date, +closeProfit)
+            recentChanges['daily-open-profit'].push(+date, +openProfit)
+            recentChanges['daily-close-ptcchange'].push(+date, +close)
+            recentChanges['daily-open-ptcchange'].push(+date, +open) 
           }
         }
       }
