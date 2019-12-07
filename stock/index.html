@@ -72,6 +72,7 @@
     var splash = document.getElementById('splash')
     var today = moment().format('YYYYMMDD')
 
+    // only support OSTMA browser 
     if (navigator.userAgent.includes('ostma')) {
       splash.style.display = "none"
       iframe.style.display = "block"
