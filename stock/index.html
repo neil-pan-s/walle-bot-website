@@ -1,91 +1,28 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta http-equiv="X-UA-Compatible" content="ie=edge">
-  <title>::: Walle Stocks :::</title>
-  <script src="./lib/moment.min.js"></script>
-  <style>
-    * {
-      padding: 0;
-      margin: 0;
-    }
-
-    html,body {
-      width: 100%;
-      height: 100%;
-
-      color: #1d1f21;
-      font-size: 17px;
-      font-family: "Menlo", "Meslo LG", "Microsoft Yahei", monospace;
-      font-weight: 400;
-    }
-
-    iframe {
-      width: 100%;
-      height: 100%;
-      margin: auto;
-      display: none;
-    }
-
-    #splash {
-      width: 100%;
-      height: 100%;
-      
-      display: flex;
-      align-items:center;
-      justify-content:center;
-    }
-
-    .logos {
-      margin: auto; 
-      text-align: center; 
-    }
-
-    .logos .walle {
-      width: 350px;
-      margin-bottom: 30px;
-    }
-
-    .logos img {
-      display: inline-block;
-      padding: 0 5px;
-    }
-  </style>
-</head>
-<body>
-
-  <div id="splash">
-    <div class="logos">
-      <img src="../walle.jpg" class="walle"><br>
-      
-      <!-- Logo Font: PoiretOneRegular -->
-      <img src="./logo.png"><br>
-    </div>
-  </div>
-
-  <iframe id="iframe" src="" frameborder="0"></iframe>
-
-  <script>
-    var iframe = document.getElementById('iframe')
-    var splash = document.getElementById('splash')
-    var today = moment().format('YYYYMMDD')
-
-    // only support OSTMA browser 
-    if (navigator.userAgent.includes('ostma')) {
-      splash.style.display = "none"
-      iframe.style.display = "block"
-      iframe.src="./main.html"
-    } 
-
-    // every day reload 
-    setInterval(() => {
-      var now = moment().format('YYYYMMDD')
-      if (today !== now) {
-        location.reload()
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width,initial-scale=1.0">
+    <title>::: Walle Stocks :::</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
       }
-    }, 60 * 60 * 1000)
-  </script>
-</body>
+
+      html,body {
+        width: 100%;
+        height: 100%;
+      }
+
+      iframe {
+        width: 100%;
+        height: 100%;
+      }
+    </style>
+  </head>
+  <body>
+    <iframe src="./main.html" frameborder="0"></iframe>
+  </body>
 </html>
