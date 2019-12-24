@@ -1,6 +1,6 @@
 {
   "name": "Walle Devtools",
-  "description" : "Chrome DevTools extension for applications.",
+  "description" : "Walle applications devTools extension",
   "version": "1.0",
   "manifest_version": 2,
   "icons": {
