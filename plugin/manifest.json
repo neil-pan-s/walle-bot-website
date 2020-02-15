@@ -1,0 +1,35 @@
+{
+  "name": "Walle Devtools",
+  "description" : "Walle applications devTools extension",
+  "version": "1.0",
+  "manifest_version": 2,
+  "icons": {
+    "16": "walle.png",
+    "128": "walle.png"
+  },
+  "background": {
+    "scripts": [
+      "scripts/background.js"
+    ]
+  },
+  "permissions": [
+    "tabs",
+    "storage",
+    "http://*/*",
+    "https://*/*"
+  ],
+  "options_page": "options.html",
+  "content_scripts": [
+    {
+      "matches": [
+        "http://*/*",
+        "https://*/*"
+      ],
+      "js": [
+        "scripts/contentscript.js"
+      ],
+      "run_at": "document_end",
+      "all_frames": false
+    }
+  ]
+}
