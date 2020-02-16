@@ -4,6 +4,8 @@ window.__Walle_Devtools_Message = async (data) => {
     const { id, type } = data
 
     if (type === 'ajax' || type === 'download') {
+      if(!window[`__Walle_Devtools_Callback_${id}`]) { return }
+
       window[`__Walle_Devtools_Callback_${id}`](data.data, data.error)
       delete window[`__Walle_Devtools_Callback_${id}`]
     }
@@ -25,18 +27,46 @@ window.__Walle_Devtools_Ajax = async (data) => {
         error && j(error)
       }
       
-      // FormData object could not be cloned
-      // 转换为json数据 在插件中再次处理为FormData
-      if(Object.prototype.toString.call(data.data) === '[object FormData]') {
-        const json = {}
-        data.data.forEach((value, key) => json[key] = value)
-        
-        data.data = json
-        // FormData 标识
-        data.data.isFormData = true
-      }
+      ;(async () => {
+        // FormData object could not be cloned
+        // 转换为json数据 在插件中再次处理为FormData
+        if(Object.prototype.toString.call(data.data) === '[object FormData]') {
+          const json = {}
 
-      window.postMessage({ id, type: 'ajax', data, walle: true } , '*')
+          for(let [key, value] of data.data) {
+            // File object could not be cloned
+            // 暂只支持数据中第一级检测 深层数据忽略
+            if (Object.prototype.toString.call(value) === '[object File]') {
+              const file = {
+                name: value.name, 
+                lastModified: value.lastModified,
+                lastModifiedDate: value.lastModifiedDate,
+                webkitRelativePath: value.webkitRelativePath,
+                size: value.size,
+                type: value.type,
+              }
+
+              const arrayBuffer = await value.arrayBuffer()
+              const buffer = new Int8Array(arrayBuffer)
+              // File 数据
+              file.buffer = buffer
+              // File 标识
+              file.isFile = true
+
+              json[key] = file
+            } else {
+              json[key] = value
+            }
+          }
+          
+          data.data = json
+          // FormData 标识
+          data.data.isFormData = true
+        }
+
+        window.postMessage({ id, type: 'ajax', data, walle: true } , '*')
+      })();
+
     } catch(e) {
       console.warn(`#window.__Walle_Devtools_Ajax# fail `, e)
       j(e)

@@ -34,7 +34,25 @@ async function ajax(type = 'GET', url, data, opts = {} ) {
     delete data.isFormData
 
     for(let key in data) {
-      formdata.append(key, data[key])
+      const value = data[key]
+
+      // File object could not be cloned
+      // 将json数据处理为File
+      if (value.isFile) {
+        const arrayBuffer = new ArrayBuffer(value.size)
+        const uint8Array = new Uint8Array(arrayBuffer)
+
+        for(let i = 0; i < value.size; i++) {
+          uint8Array[i] = value.buffer[i]
+        }
+
+        const blob = new Blob([arrayBuffer], { type: value.type })
+        const file = new File([blob], value.name, { type: value.type, lastModified: value.lastModified })
+
+        formdata.append(key, file)
+      } else {
+        formdata.append(key, value)
+      }
     }
 
     data = formdata
