@@ -9,12 +9,14 @@
   },
   "background": {
     "scripts": [
+      "scripts/jquery.min.js",
       "scripts/background.js"
     ]
   },
   "permissions": [
     "tabs",
     "storage",
+    "management",
     "http://*/*",
     "https://*/*"
   ],
@@ -31,5 +33,6 @@
       "run_at": "document_end",
       "all_frames": false
     }
-  ]
+  ],
+  "web_accessible_resources": ["scripts/inject.js"]
 }

@@ -1,3 +1,32 @@
+/* eslint-disable no-undef */
+
+window.addEventListener('message', async (evt) => {
+  if (evt.source === window && evt.data.walle) {    
+    try {
+      const { id, type } = evt.data
+
+      // content-script 需要通过background-script实现跨域请求
+      chrome.runtime.sendMessage(evt.data, (result) => {
+        sendMessage({ id, type, data: result.response, error: result.error })
+      })
+
+    } catch(e) {
+      console.warn(`#Walle_Devtools# content-script fail `, e)
+    }
+  }
+})
+
+async function sendMessage(data) {
+  const source = ';(() => window.__Walle_Devtools_Message(' + JSON.stringify(data) + '))(window)'
+  excuteScript(source)
+}
+
+async function excuteScript(source) {
+  const script = document.createElement('script')
+  script.textContent = source
+  document.documentElement.appendChild(script)
+  script.parentNode.removeChild(script)
+}
 
 async function injectScript(src, cb) { 
   return new Promise((resolve) => {
@@ -24,7 +53,6 @@ async function injectStyle(src, cb) {
     document.head.appendChild(e) 
   })
 }
-
 
 const WALLE_SCRIPTS = {
   'localhost': '/devtools.js',
@@ -53,5 +81,9 @@ const WALLE_SCRIPTS = {
   }
 })() 
 
+// 注册 Walle_Devtools 标识, 用于网页加载时判断是否有Walle插件
+excuteScript('window.__Walle_Devtools = true')
+// 插入Devtools 跨域通信机制实现
+injectScript(chrome.extension.getURL('scripts/inject.js'))
 
 console.info('Walle Devtools 😜')
