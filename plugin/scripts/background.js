@@ -11,8 +11,12 @@ chrome.runtime.onMessage.addListener((request, _, sendResponse) => {
     } 
 
     if(request.type === 'download') {
-      download(url).then((response) => sendResponse({ response })).catch((error) => sendResponse({ error }))
-    }     
+      download(url)
+        // blob 无法跨域传递 background-script和content-script为不同上下文环境 转为arrayBuffer传递
+        .then((blob) => blob.arrayBuffer().then((buffer) => ({ buffer: new Int8Array(buffer), mime: blob.type, size: blob.size })))
+        .then((response) => sendResponse({ response }))
+        .catch((error) => sendResponse({ error }))
+    }
   } catch(e) {
     console.warn(`#Walle_Devtools# background-script fail `, e)
   }

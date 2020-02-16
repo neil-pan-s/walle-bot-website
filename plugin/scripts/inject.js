@@ -53,7 +53,19 @@ window.__Walle_Devtools_Download = async (data) => {
         // dev use
         console.log(`#window.__Walle_Devtools_Download# `, data, response, error)
 
-        response && r(response)
+        // blob 无法跨域传递 background-script和content-script为不同上下文环境 转为arrayBuffer传递
+        if (response) {
+          const arrayBuffer = new ArrayBuffer(response.size)
+          const uint8Array = new Uint8Array(arrayBuffer)
+
+          for(let i = 0; i < response.size; i++) {
+            uint8Array[i] = response.buffer[i]
+          }
+
+          const blob = new Blob([arrayBuffer], { type: response.mime })
+          r(blob)
+        }
+
         error && j(error)
       }
       
@@ -65,3 +77,6 @@ window.__Walle_Devtools_Download = async (data) => {
   })
 }
 
+// test
+// window.__Walle_Devtools_Ajax({type: "GET", url: "http://baidu.com"})
+// window.__Walle_Devtools_Download({url: "http://0305.oss-cn-hangzhou.aliyuncs.com/videos/b2e5ee766a9e8d9b81fdb8d74c87b079"})
