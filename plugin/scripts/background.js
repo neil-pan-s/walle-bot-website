@@ -27,6 +27,8 @@ async function ajax(type = 'GET', url, data, opts = {} ) {
   if (data && data.isFormData) {
     const formdata = new FormData()
 
+    delete data.isFormData
+
     for(let key in data) {
       formdata.append(key, data[key])
     }

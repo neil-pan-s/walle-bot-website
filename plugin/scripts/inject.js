@@ -18,6 +18,9 @@ window.__Walle_Devtools_Ajax = async (data) => {
       const id = new Date().getTime()
       
       window[`__Walle_Devtools_Callback_${id}`] = (response, error) => { 
+        // dev use
+        console.log(`#window.__Walle_Devtools_Ajax# `, data, response, error)
+        
         response && r(response)
         error && j(error)
       }
@@ -47,6 +50,9 @@ window.__Walle_Devtools_Download = async (data) => {
       const id = new Date().getTime()
       
       window[`__Walle_Devtools_Callback_${id}`] = (response, error) => { 
+        // dev use
+        console.log(`#window.__Walle_Devtools_Download# `, data, response, error)
+
         response && r(response)
         error && j(error)
       }
