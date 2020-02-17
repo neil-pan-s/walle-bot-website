@@ -1,4 +1,6 @@
 
+let tick = 0
+
 window.__Walle_Devtools_Message = async (data) => {
   try {
     const { id, type } = data
@@ -17,7 +19,8 @@ window.__Walle_Devtools_Message = async (data) => {
 window.__Walle_Devtools_Ajax = async (data) => {
   return new Promise((r,j) => {
     try {
-      const id = new Date().getTime()
+      // 增加随机数避免请求过快 导致id相同
+      const id = `${new Date().getTime()}${tick++}`
       
       window[`__Walle_Devtools_Callback_${id}`] = (response, error) => { 
         // dev use
@@ -27,6 +30,14 @@ window.__Walle_Devtools_Ajax = async (data) => {
         error && j(error)
       }
       
+      // 60s 内未返回结果作失败处理
+      setTimeout(() => {
+        if(!window[`__Walle_Devtools_Callback_${id}`]) { return }
+
+        window[`__Walle_Devtools_Callback_${id}`](null, 'Timeout')
+        delete window[`__Walle_Devtools_Callback_${id}`]
+      }, 60*1000)
+
       ;(async () => {
         // FormData object could not be cloned
         // 转换为json数据 在插件中再次处理为FormData
@@ -77,7 +88,8 @@ window.__Walle_Devtools_Ajax = async (data) => {
 window.__Walle_Devtools_Download = async (data) => {
   return new Promise((r,j) => {
     try {
-      const id = new Date().getTime()
+      // 增加随机数避免请求过快 导致id相同
+      const id = `${new Date().getTime()}${tick++}`
       
       window[`__Walle_Devtools_Callback_${id}`] = (response, error) => { 
         // dev use
@@ -99,6 +111,14 @@ window.__Walle_Devtools_Download = async (data) => {
         error && j(error)
       }
       
+      // 60s 内未返回结果作失败处理
+      setTimeout(() => {
+        if(!window[`__Walle_Devtools_Callback_${id}`]) { return }
+
+        window[`__Walle_Devtools_Callback_${id}`](null, 'Timeout')
+        delete window[`__Walle_Devtools_Callback_${id}`]
+      }, 60*1000)
+
       window.postMessage({ id, type: 'download', data, walle: true } , '*')
     } catch(e) {
       console.warn(`#window.__Walle_Devtools_Download# fail `, e)

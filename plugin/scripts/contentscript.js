@@ -70,7 +70,7 @@ const WALLE_SCRIPTS = {
   const hostname = location.hostname
   const hostnames = Object.keys(WALLE_SCRIPTS)
 
-  if (hostnames.includes(hostname)) {
+  if (hostnames.includes(hostname) && location.pathname === '/') {
     const js = WALLE_SCRIPTS[hostname]
 
     if (js.startsWith('/')) {
