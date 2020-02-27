@@ -26,8 +26,7 @@ window.__Walle_Devtools_Ajax = async (data) => {
         // dev use
         console.log(`#window.__Walle_Devtools_Ajax# `, data, response, error)
         
-        response && r(response)
-        error && j(error)
+        response ? r(response) : j(error)
       }
       
       // 60s 内未返回结果作失败处理
@@ -106,9 +105,9 @@ window.__Walle_Devtools_Download = async (data) => {
 
           const blob = new Blob([arrayBuffer], { type: response.mime })
           r(blob)
+        } else {
+          j(error)
         }
-
-        error && j(error)
       }
       
       // 60s 内未返回结果作失败处理
