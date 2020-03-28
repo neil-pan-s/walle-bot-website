@@ -14,4 +14,4 @@ async function injectScript(src, cb) {
   })
 }
 
-// injectScript('http://localhost:8888/walle-stock.min.js')
+// injectScript('http://localhost:8888/stock/walle-stock.min.js')
