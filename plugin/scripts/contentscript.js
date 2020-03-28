@@ -55,9 +55,6 @@ async function injectStyle(src, cb) {
 }
 
 const WALLE_SCRIPTS = {
-  'localhost': '/devtools.js',
-  '127.0.0.1': '/devtools.js',
-
   'www.douban.com': 'https://walle.neil-pan.com/sns/walle-sns.min.js',
   'q.10jqka.com.cn': 'https://walle.neil-pan.com/stock/walle-stock.min.js',
 
