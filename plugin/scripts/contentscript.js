@@ -58,18 +58,17 @@ const WALLE_SCRIPTS = {
   'www.douban.com': 'https://walle.neil-pan.com/sns/walle-sns.min.js',
   'q.10jqka.com.cn': 'https://walle.neil-pan.com/stock/walle-stock.min.js',
 
-  // dev use, all pages inject devtools.js from localhost
-  '': 'http://localhost:8080/devtools.js',
+  // dev use
+  '*': 'http://localhost:8080/devtools.js',
 }
 
 ;(() => {
 
-  const hostname = location.hostname
-  const hostnames = Object.keys(WALLE_SCRIPTS)
+  // all pages inject devtools.js from localhost for dev
+  const js = WALLE_SCRIPTS[location.hostname] || WALLE_SCRIPTS['*']
 
-  if (hostnames.includes(hostname) && location.pathname === '/') {
-    const js = WALLE_SCRIPTS[hostname]
-
+  // 仅限首页加载 walle-bot-js 以免影响正常页面访问
+  if (location.pathname === '/') {
     if (js.startsWith('/')) {
       injectScript(location.origin + js)
     } else {
