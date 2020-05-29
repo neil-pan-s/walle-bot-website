@@ -28,7 +28,7 @@ async function excuteScript(source) {
   script.parentNode.removeChild(script)
 }
 
-async function injectScript(src, cb) { 
+async function injectScript(src, cb, el) { 
   return new Promise((resolve) => {
     var e = document.createElement('script'); 
     e.type = 'text/javascript'; 
@@ -37,11 +37,11 @@ async function injectScript(src, cb) {
       resolve() 
       cb && cb() 
     }
-    document.body.appendChild(e) 
+    (el || document.body).appendChild(e) 
   })
 }
 
-async function injectStyle(src, cb) { 
+async function injectStyle(src, cb, el) { 
   return new Promise((resolve) => {
     var e = document.createElement('link'); 
     e.setAttribute('rel', 'stylesheet')
@@ -50,7 +50,7 @@ async function injectStyle(src, cb) {
       resolve() 
       cb && cb() 
     }
-    document.head.appendChild(e) 
+    (el || document.head).appendChild(e) 
   })
 }
 
@@ -63,7 +63,7 @@ const WALLE_SCRIPTS = {
   // 'q.10jqka.com.cn': 'http://localhost:8080/devtools.js',
 }
 
-;(() => {
+document.addEventListener('DOMContentLoaded', async () => {
   const hostname = location.hostname
   const hostnames = Object.keys(WALLE_SCRIPTS)
 
@@ -77,11 +77,11 @@ const WALLE_SCRIPTS = {
       injectScript(js)
     }
   }
-})() 
+})
 
 // 注册 Walle_Devtools 标识, 用于网页加载时判断是否有Walle插件
 excuteScript('window.__Walle_Devtools = true')
-// 插入Devtools 跨域通信机制实现
-injectScript(chrome.extension.getURL('scripts/inject.js'))
+// 插入Devtools 跨域通信机制实现 此处保证页面加载开始时首先执行插件代码
+injectScript(chrome.extension.getURL('scripts/inject.js'), null, document.documentElement)
 
 console.info('Walle Devtools 😜')
