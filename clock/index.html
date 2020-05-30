@@ -114,6 +114,7 @@
 		<ul class="nav">
 			<li target="sh000001" onclick="location.hash='#sh000001'; location.reload()"> SH000001 </li>
 			<li target="usr_$dji" onclick="location.hash='#usr_$dji'; location.reload()"> DJIA </li>			
+			<li target="hf_CHA50CFD" onclick="location.hash='#hf_CHA50CFD'; location.reload()"> A50 </li>			
 		</ul>
 
 		<div id="copyright"> <a href="http://neil-pan.com" target="_blank" title="wx: neil-pan-s">© Neil Pan</a> </div>
@@ -151,12 +152,16 @@
 			$(document).ready(function() {
 
 				var target = location.hash.replace('#', '') || 'sh000001'
+				var names = {
+					'usr_$dji': 'DJIA', 
+					'hf_CHA50CFD': 'A50',
+				}
 
 				$('#screenfull').click(function (){ 
 					if (screenfull.isEnabled) { screenfull.toggle($('body')[0]); }
 				})
 
-				// $('.nav').append(`<li style="color: #FFF;">${ target === 'usr_$dji' ? 'DJIA' : target.toUpperCase() }</li>`)
+				$('.nav').append(`<li style="color: #FFF;">${ (names[target] || target).toUpperCase() }</li>`)
 
 				setInterval(async () => {
 
@@ -172,7 +177,6 @@
 					//	3：2852.3512 - 当前价格
 					//	4：2855.3756 - 今日最高价
 					//	5：2829.6271 - 今日最低价
-					//  ...
 					// 
 					//  var hq_str_usr_$dji="道琼斯,25383.1094,-0.07,2020-05-30 05:14:07,-17.5300,25324.1504,25482.8008,25031.6699,29568.5703,18213.6504,545144765,410292795,0,0.00,--,0.00,0.00,0.00,0.00,0,0,0.0000,0.00,0.0000,,May 29 05:14PM EDT,25400.6406,0,1,2020";
 					//  1: 25383.1094 - 当前价格
@@ -182,6 +186,14 @@
 					//  8: 29568.5703 - 52周最高价
 					//  9: 18213.6504 - 52周最低价
 					// 26: 25400.6406 - 昨日收盘价
+					// 
+					//  var hq_str_hf_CHA50CFD="13212.000,,13210.000,13217.500,13230.000,13045.000,05:14:25,13195.000,13187.500,635583.000,16,2,2020-05-30,富时中国A50指数,60041";
+					//  0: 13212.000 - 当前价格
+					//  2: 13210.000 - 买价
+					//  3: 13217.500 - 卖价
+					//  4: 13230.000 - 今日最高价
+					//  5: 13045.000 - 今日最低价
+					//  7: 13195.000 - 昨日收盘价
 					injectScript(url, () => {
 
 						try {
@@ -198,6 +210,16 @@
 
 								__integer = +sections[1].split('.')[0]
 								__decimal = +((+sections[1]).toFixed(2).split('.')[1])
+
+								$('.flip-clock-wrapper').css('zoom', '2.5')
+
+							} else if (target === 'hf_CHA50CFD') {
+
+								preclose = +sections[7]
+								now = +sections[0]
+
+								__integer = +sections[0].split('.')[0]
+								__decimal = +((+sections[0]).toFixed(2).split('.')[1])
 
 								$('.flip-clock-wrapper').css('zoom', '2.5')
 
