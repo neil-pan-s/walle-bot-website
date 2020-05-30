@@ -30,6 +30,7 @@
 
 			.flip-clock-wrapper ul li a div div.inn {
 				color: #fff;
+				font-size: 1em;
 			}
 
 			.flip-clock-dot {
@@ -57,6 +58,15 @@
 			.red {
 				background-color: #FFA4A4;
 			}
+
+			@media screen and (max-width:1400px) {
+				.flip-clock-wrapper {
+					zoom:2.0 !important; 
+				}
+
+				#screenfull { display: none; }
+			}
+
 		</style>
 	</head>
 
@@ -69,6 +79,7 @@
 		</div>
 
 		<div id="screenfull"></div>
+		<div id="scripts"></div>
 
 		<script>
 			async function injectScript(src, cb, el) { 
@@ -104,6 +115,8 @@
 			
 			$(document).ready(function() {
 				setInterval(async () => {
+
+					$('#scripts').empty()
 
 					// JSONP : 
 					//   var hq_str_sh000001="上证指数,2835.5840,2846.2217,2852.3512,2855.3756,2829.6271,0,0,206792804,233798996643,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2020-05-29,15:02:10,00,";
@@ -164,7 +177,7 @@
 						} catch {
 
 						}
-					})
+					}, document.querySelector('#scripts'))
 				}, 3000)
 			});
 		</script>
