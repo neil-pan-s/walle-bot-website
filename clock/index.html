@@ -10,6 +10,11 @@
 		<style>
 			* { padding: 0; margin: 0; }
 
+			a { 
+				color: #222;
+				text-decoration:none; 
+			}
+
 			html,body {
 				width: 100%;
 				height: 100%;
@@ -21,6 +26,10 @@
 				justify-content: center;
 
 				user-select:none;
+				color: #222;
+				font-size: 1em;
+				font-weight: bold;
+				letter-spacing: 2px;
 			}
 
 			.flip-clock-wrapper {
@@ -51,6 +60,31 @@
 				background-size:cover;
 			}
 
+			#copyright {
+				position: fixed;
+				bottom: 3em;
+				width: 100%;
+				height: 30px;
+				text-align: center;
+			}
+
+			.nav {
+				position: fixed;
+				top: 3em;
+				right: 3em;
+				height: 30px;
+				text-align: right;
+			}
+
+			.nav li {
+				display: inline-block;
+				margin: 0px 10px;
+			}
+
+			.nav li:hover, #copyright a:hover {
+				color: #FFF;
+			}
+
 			.green {
 				background-color: #89E7B3;
 			}
@@ -77,6 +111,12 @@
 			<div class="decimal"></div>
 		</div>
 
+		<ul class="nav">
+			<!-- <li target="sh000001"> 000001.SH </li> -->
+			<!-- <li target="usr_$dji"> DJIA </li>			 -->
+		</ul>
+
+		<div id="copyright"> <a href="http://neil-pan.com" target="_blank" title="wx: neil-pan-s">© Neil Pan</a> </div>
 		<div id="screenfull"></div>
 		<div id="scripts"></div>
 
@@ -96,10 +136,6 @@
 		</script>
 
 		<script type="text/javascript">
-			$('#screenfull').click(function (){ 
-				if (screenfull.isEnabled) { screenfull.toggle($('body')[0]); }
-			})
-
 			var _integer = 0000, _decimal = 00
 
 			// Instantiate a counter
@@ -113,9 +149,20 @@
 			});
 			
 			$(document).ready(function() {
+
+				var target = location.hash.replace('#', '') || 'sh000001'
+
+				$('#screenfull').click(function (){ 
+					if (screenfull.isEnabled) { screenfull.toggle($('body')[0]); }
+				})
+
+				$('.nav').append(`<li>${ target.toUpperCase() }</li>`)
+
 				setInterval(async () => {
 
 					$('#scripts').empty()
+
+					const url = `https://hq.sinajs.cn/list=${target}`
 
 					// JSONP : 
 					//   var hq_str_sh000001="上证指数,2835.5840,2846.2217,2852.3512,2855.3756,2829.6271,0,0,206792804,233798996643,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2020-05-29,15:02:10,00,";
@@ -126,12 +173,14 @@
 					//	4：2855.3756 - 今日最高价
 					//	5：2829.6271 - 今日最低价
 					//  ... 
-					injectScript('https://hq.sinajs.cn/list=sh000001', () => {
+					injectScript(url, () => {
 
 						try {
-							if (!hq_str_sh000001) { return }
+							const hq_str_variable = window[`hq_str_${target}`]
 
-							var sections = hq_str_sh000001.split(',')
+							if (!hq_str_variable) { return }
+
+							var sections = hq_str_variable.split(',')
 
 							var preclose = +sections[2]
 							var now = +sections[3]
