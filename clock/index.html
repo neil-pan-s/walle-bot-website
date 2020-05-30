@@ -209,17 +209,6 @@
 								__decimal = +((+sections[3]).toFixed(2).split('.')[1])
 							}
 
-							if (now > preclose) {
-								$('.flip-clock-wrapper ul li a div div.inn').css('color', '#FFA4A4')
-							} else if (now < preclose) {
-								$('.flip-clock-wrapper ul li a div div.inn').css('color', '#89E7B3')
-							} else {
-								$('.flip-clock-wrapper ul li a div div.inn').css('color', '#FFFFFF')
-							}
-
-							// Dev Use
-							// $('.flip-clock-wrapper ul li a div div.inn').css('color', '#FFA4A4')
-
 							// Dev Use 
 							// __integer = _integer + 3
 							// __decimal = _decimal + 3
@@ -243,6 +232,18 @@
 									decimal.decrement()
 								}
 							}
+
+							if (now > preclose) {
+								$('.flip-clock-wrapper ul li a div div.inn').css('color', '#FFA4A4')
+							} else if (now < preclose) {
+								$('.flip-clock-wrapper ul li a div div.inn').css('color', '#89E7B3')
+							} else {
+								$('.flip-clock-wrapper ul li a div div.inn').css('color', '#FFFFFF')
+							}
+
+							// Dev Use
+							// $('.flip-clock-wrapper ul li a div div.inn').css('color', '#FFA4A4')
+
 						} catch {
 
 						}
