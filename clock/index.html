@@ -11,7 +11,7 @@
 			* { padding: 0; margin: 0; }
 
 			a { 
-				color: #222;
+				color: #000;
 				text-decoration:none; 
 			}
 
@@ -112,8 +112,8 @@
 		</div>
 
 		<ul class="nav">
-			<!-- <li target="sh000001"> 000001.SH </li> -->
-			<!-- <li target="usr_$dji"> DJIA </li>			 -->
+			<li target="sh000001" onclick="location.hash='#sh000001'; location.reload()"> SH000001 </li>
+			<li target="usr_$dji" onclick="location.hash='#usr_$dji'; location.reload()"> DJIA </li>			
 		</ul>
 
 		<div id="copyright"> <a href="http://neil-pan.com" target="_blank" title="wx: neil-pan-s">© Neil Pan</a> </div>
@@ -156,7 +156,7 @@
 					if (screenfull.isEnabled) { screenfull.toggle($('body')[0]); }
 				})
 
-				$('.nav').append(`<li>${ target.toUpperCase() }</li>`)
+				// $('.nav').append(`<li style="color: #FFF;">${ target === 'usr_$dji' ? 'DJIA' : target.toUpperCase() }</li>`)
 
 				setInterval(async () => {
 
@@ -165,14 +165,23 @@
 					const url = `https://hq.sinajs.cn/list=${target}`
 
 					// JSONP : 
-					//   var hq_str_sh000001="上证指数,2835.5840,2846.2217,2852.3512,2855.3756,2829.6271,0,0,206792804,233798996643,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2020-05-29,15:02:10,00,";
 					// 
+					//  var hq_str_sh000001="上证指数,2835.5840,2846.2217,2852.3512,2855.3756,2829.6271,0,0,206792804,233798996643,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2020-05-29,15:02:10,00,";
 					//	1：2835.5840 - 今日开盘价
 					//	2：2846.2217 - 昨日收盘价
 					//	3：2852.3512 - 当前价格
 					//	4：2855.3756 - 今日最高价
 					//	5：2829.6271 - 今日最低价
-					//  ... 
+					//  ...
+					// 
+					//  var hq_str_usr_$dji="道琼斯,25383.1094,-0.07,2020-05-30 05:14:07,-17.5300,25324.1504,25482.8008,25031.6699,29568.5703,18213.6504,545144765,410292795,0,0.00,--,0.00,0.00,0.00,0.00,0,0,0.0000,0.00,0.0000,,May 29 05:14PM EDT,25400.6406,0,1,2020";
+					//  1: 25383.1094 - 当前价格
+					//  5: 25324.1504 - 今日开盘价
+					//  6: 25482.8008 - 今日最高价
+					//  7: 25031.6699 - 今日最低价
+					//  8: 29568.5703 - 52周最高价
+					//  9: 18213.6504 - 52周最低价
+					// 26: 25400.6406 - 昨日收盘价
 					injectScript(url, () => {
 
 						try {
@@ -180,10 +189,25 @@
 
 							if (!hq_str_variable) { return }
 
+							var now = 0, preclose = 0, __integer = 0, __decimal = 0
 							var sections = hq_str_variable.split(',')
 
-							var preclose = +sections[2]
-							var now = +sections[3]
+							if (target === 'usr_$dji') {
+								preclose = +sections[26]
+								now = +sections[1]
+
+								__integer = +sections[1].split('.')[0]
+								__decimal = +((+sections[1]).toFixed(2).split('.')[1])
+
+								$('.flip-clock-wrapper').css('zoom', '2.5')
+
+							} else {
+								preclose = +sections[2]
+								now = +sections[3]
+
+								__integer = +sections[3].split('.')[0]
+								__decimal = +((+sections[3]).toFixed(2).split('.')[1])
+							}
 
 							if (now > preclose) {
 								$('.flip-clock-wrapper ul li a div div.inn').css('color', '#FFA4A4')
@@ -195,9 +219,6 @@
 
 							// Dev Use
 							// $('.flip-clock-wrapper ul li a div div.inn').css('color', '#FFA4A4')
-
-							var __integer = +sections[3].split('.')[0]
-							var __decimal = +sections[3].split('.')[1].slice(0 , 2)
 
 							// Dev Use 
 							// __integer = _integer + 3
