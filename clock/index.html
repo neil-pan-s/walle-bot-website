@@ -112,9 +112,11 @@
 		</div>
 
 		<ul class="nav">
-			<li target="sh000001" onclick="location.hash='#sh000001'; location.reload()"> SH000001 </li>
-			<li target="usr_$dji" onclick="location.hash='#usr_$dji'; location.reload()"> DJIA </li>			
-			<li target="hf_CHA50CFD" onclick="location.hash='#hf_CHA50CFD'; location.reload()"> A50 </li>			
+			<li target="sh000001" onclick="location.hash='#sh000001';"> SH000001 </li>
+			<li target="usr_$dji" onclick="location.hash='#usr_$dji';"> DJIA </li>			
+			<li target="hf_CHA50CFD" onclick="location.hash='#hf_CHA50CFD';"> A50 </li>			
+
+			<li class="select"></li>			
 		</ul>
 
 		<div id="copyright"> <a href="http://neil-pan.com" target="_blank" title="wx: neil-pan-s">© Neil Pan</a> </div>
@@ -136,9 +138,14 @@
 			}
 		</script>
 
-		<script type="text/javascript">
-			var _integer = 0000, _decimal = 00
+		<script type="text/javascript">			
+			var target = location.hash.replace('#', '') || 'sh000001'
 
+			const names = {
+				'usr_$dji': 'DJIA', 
+				'hf_CHA50CFD': 'A50',
+			}
+			
 			// Instantiate a counter
 			const integer = new FlipClock($('.integer'), '0000', {
 				clockFace: 'Counter',
@@ -151,17 +158,18 @@
 			
 			$(document).ready(function() {
 
-				var target = location.hash.replace('#', '') || 'sh000001'
-				var names = {
-					'usr_$dji': 'DJIA', 
-					'hf_CHA50CFD': 'A50',
-				}
-
 				$('#screenfull').click(function (){ 
 					if (screenfull.isEnabled) { screenfull.toggle($('body')[0]); }
 				})
 
-				$('.nav').append(`<li style="color: #FFF;">${ (names[target] || target).toUpperCase() }</li>`)
+				$('.nav li').click(function () {
+					if (!$(this).attr('target')) { return }
+
+					target = $(this).attr('target')
+									
+					$('.nav .select').html(`<span style="color: #FFF;">${ (names[target] || target).toUpperCase() }</span>`)
+				})
+				$('.nav .select').html(`<span style="color: #FFF;">${ (names[target] || target).toUpperCase() }</span>`)
 
 				setInterval(async () => {
 
@@ -229,31 +237,12 @@
 
 								__integer = +sections[3].split('.')[0]
 								__decimal = +((+sections[3]).toFixed(2).split('.')[1])
+
+								// $('.flip-clock-wrapper').css('zoom', '3.0')
 							}
 
-							// Dev Use 
-							// __integer = _integer + 3
-							// __decimal = _decimal + 3
-
-							while( __integer !== _integer) {
-								if (__integer > _integer) { 
-									_integer++
-									integer.increment() 
-								} else if (__integer < _integer) {
-									_integer--
-									integer.decrement()
-								}
-							}
-
-							while( __decimal !== _decimal) {
-								if (__decimal > _decimal) { 
-									_decimal++
-									decimal.increment() 
-								} else if (__decimal < _decimal) {
-									_decimal--
-									decimal.decrement()
-								}
-							}
+							integer.setTime(`${__integer}`)
+							decimal.setTime(`${__decimal}`)
 
 							if (now > preclose) {
 								$('.flip-clock-wrapper ul li a div div.inn').css('color', '#FFA4A4')
@@ -262,9 +251,6 @@
 							} else {
 								$('.flip-clock-wrapper ul li a div div.inn').css('color', '#FFFFFF')
 							}
-
-							// Dev Use
-							// $('.flip-clock-wrapper ul li a div div.inn').css('color', '#FFA4A4')
 
 						} catch {
 
