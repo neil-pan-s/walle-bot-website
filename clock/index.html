@@ -147,12 +147,12 @@
 			}
 			
 			// Instantiate a counter
-			const integer = new FlipClock($('.integer'), '0000', {
+			let integer = new FlipClock($('.integer'), '0000', {
 				clockFace: 'Counter',
 				minimumDigits: 4,
 			});
 			
-			const decimal = new FlipClock($('.decimal'), '00', {
+			let decimal = new FlipClock($('.decimal'), '00', {
 				clockFace: 'Counter',
 			});
 			
@@ -167,6 +167,15 @@
 
 					target = $(this).attr('target')
 									
+					integer = new FlipClock($('.integer'), '0000', {
+						clockFace: 'Counter',
+						minimumDigits: 4,
+					});
+					
+					decimal = new FlipClock($('.decimal'), '00', {
+						clockFace: 'Counter',
+					});
+					
 					$('.nav .select').html(`<span style="color: #FFF;">${ (names[target] || target).toUpperCase() }</span>`)
 				})
 				$('.nav .select').html(`<span style="color: #FFF;">${ (names[target] || target).toUpperCase() }</span>`)
@@ -238,7 +247,7 @@
 								__integer = +sections[3].split('.')[0]
 								__decimal = +((+sections[3]).toFixed(2).split('.')[1])
 
-								// $('.flip-clock-wrapper').css('zoom', '3.0')
+								$('.flip-clock-wrapper').css('zoom', '3.0')
 							}
 
 							integer.setTime(`${__integer}`)
