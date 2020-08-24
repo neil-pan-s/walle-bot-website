@@ -21,11 +21,11 @@ async function sendMessage(data) {
   excuteScript(source)
 }
 
-async function excuteScript(source) {
+async function excuteScript(source, isAutoRemove = true) {
   const script = document.createElement('script')
   script.textContent = source
   document.documentElement.appendChild(script)
-  script.parentNode.removeChild(script)
+  isAutoRemove && script.parentNode.removeChild(script)
 }
 
 async function injectScript(src, cb, el) { 
@@ -78,6 +78,21 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
   }
 })
+
+// 脚本钩子函数支持 支撑跨域iframe等网页 执行相应脚本屏蔽或调整相应内容
+// url中使用 ?_walle_script= 'xxx' 传递的脚本将直接执行
+;(async () => {
+  const search = location.search.replace('?', '')
+  const searchs = search.split('&').reduce((map, item) => { 
+    const [key, value] = item.split('=')
+    map[key] = value
+    return map
+  }, {})
+  const _walle_script = searchs['_walle_script']
+  if (_walle_script) {
+    excuteScript(decodeURIComponent(_walle_script), false)
+  }
+})();
 
 // 注册 Walle_Devtools 标识, 用于网页加载时判断是否有Walle插件
 excuteScript('window.__Walle_Devtools = true')
