@@ -99,4 +99,4 @@ excuteScript('window.__Walle_Devtools = true')
 // 插入Devtools 跨域通信机制实现 此处保证页面加载开始时首先执行插件代码
 injectScript(chrome.extension.getURL('scripts/inject.js'), null, document.documentElement)
 
-console.info('Walle Devtools 😜')
+// console.info('Walle Devtools 😜')
